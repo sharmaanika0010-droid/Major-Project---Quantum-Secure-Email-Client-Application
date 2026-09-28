@@ -1,4 +1,4 @@
-# QuMail — Quantum Secure Email Client
+# QuMail — Quantum Secure Email Client Application
 
 Desktop email client that encrypts Gmail/Yahoo emails using quantum keys from a Key Manager (QKD).
 Security levels: 1 (None) · 2 (Quantum-aided AES) · 3 (One-Time Pad) · 4 (Extra)
