@@ -7,7 +7,7 @@ Team: Anika Sharma (Lead, Architecture/DevOps) · Amit Chouhan (Email/GUI) · Um
 Tracker: Jira project SCRUM · Docs: see docs/PROJECT_VISION.md
 
 ## Structure
-- `src/qumail/` — crypto, km, email, gui modules
+- `src/` — crypto, km, email, gui modules
 - `km_simulator/` — mock Key Manager REST API
 - `tests/` — unit & integration tests
 - `docs/` — UML diagrams, reports
