@@ -2,9 +2,8 @@
 
 ## Objective
 
-Create and document the Use Case Diagram for the Quantum Secure Email
-Client, identifying Sender, Receiver, and Key Manager (KM) as the main
-actors and documenting their interactions with the system.
+Create and document the Use Case Diagram for the Quantum Secure Email Client, identifying Sender, Receiver, and Key
+Manager (KM) as the main actors and documenting their interactions with the system.
 
 ## Actors
 
@@ -13,6 +12,7 @@ actors and documenting their interactions with the system.
 The Sender composes and sends an email.
 
 Main interactions:
+
 - Login
 - Compose email
 - Request encryption key
@@ -23,10 +23,10 @@ Main interactions:
 
 ### 2. Receiver
 
-The Receiver receives the encrypted email and decrypts it using the
-required cryptographic key.
+The Receiver receives the encrypted email and decrypts it using the required cryptographic key.
 
 Main interactions:
+
 - Login
 - Receive encrypted email
 - Request decryption key
@@ -36,16 +36,17 @@ Main interactions:
 
 ### 3. Key Manager (KM)
 
-The Key Manager manages and provides the required cryptographic key
-material to authorized participants.
+The Key Manager manages and provides the required cryptographic key material to authorized participants.
 
 Main interactions:
+
 - Receive key request from Sender
 - Provide encryption key
 - Receive key request from Receiver
 - Provide corresponding key material
 
 ## Use Cases
+
 ```mermaid
 graph LR
 
@@ -84,8 +85,6 @@ graph LR
     KM --> EncKey
     KM --> DecKey
 ```
-
-
 
 ## Main Message Flow
 
