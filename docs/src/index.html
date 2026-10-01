@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Secure Email Client</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="email-container">
+
+        <div class="header">
+            <h1>Compose Email</h1>
+            <p>Quantum Secure Email Client</p>
+        </div>
+
+        <form id="emailForm">
+
+            <label for="to">To</label>
+            <input
+                type="email"
+                id="to"
+                placeholder="Enter recipient email"
+                required
+            >
+
+            <label for="subject">Subject</label>
+            <input
+                type="text"
+                id="subject"
+                placeholder="Enter email subject"
+                required
+            >
+
+            <label for="body">Message</label>
+            <textarea
+                id="body"
+                rows="10"
+                placeholder="Write your message..."
+                required
+            ></textarea>
+
+            <label for="attachment">Attachment</label>
+            <input
+                type="file"
+                id="attachment"
+            >
+
+            <div class="buttons">
+                <button type="submit">Send Email</button>
+                <button type="reset" class="cancel">Clear</button>
+            </div>
+
+        </form>
+
+        <p id="status"></p>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
