@@ -1,0 +1,234 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Activity" id="activity">
+    <mxGraphModel dx="3433" dy="2273" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="l0" parent="1" style="swimlane;html=1;startSize=36;fontStyle=1;fontSize=13;fillColor=#DAE8FC;strokeColor=#666666;" value="Sender (QuMail Client)" vertex="1">
+          <mxGeometry height="1320" width="420" as="geometry" />
+        </mxCell>
+        <mxCell id="l1" parent="1" style="swimlane;html=1;startSize=36;fontStyle=1;fontSize=13;fillColor=#D5E8D4;strokeColor=#666666;" value="Key Manager (KM)" vertex="1">
+          <mxGeometry height="1320" width="320" x="420" as="geometry" />
+        </mxCell>
+        <mxCell id="l2" parent="1" style="swimlane;html=1;startSize=36;fontStyle=1;fontSize=13;fillColor=#FFF2CC;strokeColor=#666666;" value="Email Provider (Gmail / Yahoo)" vertex="1">
+          <mxGeometry height="1320" width="320" x="740" as="geometry" />
+        </mxCell>
+        <mxCell id="l3" parent="1" style="swimlane;html=1;startSize=36;fontStyle=1;fontSize=13;fillColor=#E1D5E7;strokeColor=#666666;" value="Receiver (QuMail Client)" vertex="1">
+          <mxGeometry height="1320" width="320" x="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=12;fontStyle=1;align=left;" value="QuMail — Activity Diagram: Compose → Encrypt → Send → Receive → Decrypt · SCRUM-18 · Anika Sharma · v2" vertex="1">
+          <mxGeometry height="24" width="900" y="-34" as="geometry" />
+        </mxCell>
+        <mxCell id="start" parent="1" style="ellipse;fillColor=#000000;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="24" width="24" x="188" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="11" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Login (IMAP/SMTP) and open Compose" vertex="1">
+          <mxGeometry height="44" width="180" x="110" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="12" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Enter To, Subject, Body, attach files" vertex="1">
+          <mxGeometry height="44" width="180" x="110" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="13" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Select Security Level (1 / 2 / 3 / 4)" vertex="1">
+          <mxGeometry height="44" width="180" x="110" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="14" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=10;" value="Level = 1 ?" vertex="1">
+          <mxGeometry height="60" width="120" x="140" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="15" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Request key from KM (length / level)" vertex="1">
+          <mxGeometry height="44" width="180" x="110" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="16" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=10;" value="Key available ?" vertex="1">
+          <mxGeometry height="60" width="120" x="140" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="17" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;fillColor=#F8CECC;strokeColor=#B85450;fontSize=10;" value="Show error: No quantum keys available" vertex="1">
+          <mxGeometry height="60" width="105" x="15" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="18" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Encrypt body + attachments (L2 AES-256-GCM / L3 OTP / L4 extra)" vertex="1">
+          <mxGeometry height="44" width="180" x="110" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="19" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Build envelope: level, key_id, nonce, ciphertext (base64)" vertex="1">
+          <mxGeometry height="44" width="180" x="110" y="645" as="geometry" />
+        </mxCell>
+        <mxCell id="20" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Send via SMTP (X-QuMail-Level / X-QuMail-KeyID headers)" vertex="1">
+          <mxGeometry height="44" width="180" x="110" y="725" as="geometry" />
+        </mxCell>
+        <mxCell id="21" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Log key usage (audit trail)" vertex="1">
+          <mxGeometry height="44" width="180" x="110" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="22" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Allocate next unused key; mark CONSUMED" vertex="1">
+          <mxGeometry height="44" width="180" x="490" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="23" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Return key + key_id" vertex="1">
+          <mxGeometry height="44" width="180" x="490" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="24" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Look up key by key_id (receiver side)" vertex="1">
+          <mxGeometry height="44" width="180" x="490" y="1030" as="geometry" />
+        </mxCell>
+        <mxCell id="25" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Return matching key (one-time use enforced)" vertex="1">
+          <mxGeometry height="44" width="180" x="490" y="1100" as="geometry" />
+        </mxCell>
+        <mxCell id="26" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Store message in mailbox" vertex="1">
+          <mxGeometry height="44" width="180" x="810" y="725" as="geometry" />
+        </mxCell>
+        <mxCell id="27" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Deliver to receiver INBOX" vertex="1">
+          <mxGeometry height="44" width="180" x="810" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="28" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Fetch inbox via IMAP" vertex="1">
+          <mxGeometry height="44" width="180" x="1130" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="29" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Open message; read X-QuMail headers" vertex="1">
+          <mxGeometry height="44" width="180" x="1130" y="870" as="geometry" />
+        </mxCell>
+        <mxCell id="30" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=10;" value="Encrypted (level &gt; 1) ?" vertex="1">
+          <mxGeometry height="60" width="120" x="1160" y="940" as="geometry" />
+        </mxCell>
+        <mxCell id="31" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Request key by key_id from KM" vertex="1">
+          <mxGeometry height="44" width="180" x="1130" y="1030" as="geometry" />
+        </mxCell>
+        <mxCell id="32" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Decrypt body + attachments; verify integrity" vertex="1">
+          <mxGeometry height="44" width="180" x="1130" y="1100" as="geometry" />
+        </mxCell>
+        <mxCell id="33" parent="1" style="rounded=1;arcSize=30;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="Display plaintext email" vertex="1">
+          <mxGeometry height="44" width="180" x="1130" y="1180" as="geometry" />
+        </mxCell>
+        <mxCell id="end" parent="1" style="ellipse;fillColor=#000000;strokeColor=#000000;strokeWidth=3;" value="" vertex="1">
+          <mxGeometry height="28" width="28" x="1206" y="1250" as="geometry" />
+        </mxCell>
+        <mxCell id="note" parent="1" style="text;html=1;whiteSpace=wrap;fontSize=10;fontColor=#555555;dashed=1;strokeColor=#999999;align=left;spacing=6;" value="Note: KM in Week 1 is a simulator (mock key bank). Level 3 (OTP) needs key length ≥ message length, otherwise the No-keys path is taken." vertex="1">
+          <mxGeometry height="70" width="280" x="760" y="1160" as="geometry" />
+        </mxCell>
+        <mxCell id="34" edge="1" parent="1" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="35" edge="1" parent="1" source="11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="36" edge="1" parent="1" source="12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="37" edge="1" parent="1" source="13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="38" edge="1" parent="1" source="14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="39" edge="1" parent="1" source="14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.85;entryY=0;entryDx=0;entryDy=0;" target="20">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="350" />
+              <mxPoint x="350" y="707" />
+              <mxPoint x="263" y="707" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="40" edge="1" parent="1" source="15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="41" edge="1" parent="1" source="22" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="42" edge="1" parent="1" source="23" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="16">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="340" y="512" />
+              <mxPoint x="340" y="467" />
+              <mxPoint x="200" y="467" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="43" edge="1" parent="1" source="16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="17">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="67" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="44" edge="1" parent="1" source="17" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1;" target="13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="8" y="630" />
+              <mxPoint x="8" y="282" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="45" edge="1" parent="1" source="16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="46" edge="1" parent="1" source="18" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="47" edge="1" parent="1" source="19" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="48" edge="1" parent="1" source="20" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="49" edge="1" parent="1" source="20" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="50" edge="1" parent="1" source="26" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="51" edge="1" parent="1" source="27" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="52" edge="1" parent="1" source="28" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="53" edge="1" parent="1" source="29" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="54" edge="1" parent="1" source="30" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="55" edge="1" parent="1" source="30" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="33">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1340" y="970" />
+              <mxPoint x="1340" y="1202" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="56" edge="1" parent="1" source="31" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57" edge="1" parent="1" source="24" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="58" edge="1" parent="1" source="25" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="32">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="59" edge="1" parent="1" source="32" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="33">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="60" edge="1" parent="1" source="33" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;jumpStyle=arc;jumpSize=8;strokeColor=#333333;endArrow=block;endFill=1;" target="end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="61" parent="1" style="text;html=1;fontSize=9;fontColor=#555555;verticalAlign=middle;align=left;" value="No" vertex="1">
+          <mxGeometry height="16" width="30" x="206" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="62" parent="1" style="text;html=1;fontSize=9;fontColor=#555555;verticalAlign=middle;align=left;" value="Yes (Level 1 → plain)" vertex="1">
+          <mxGeometry height="16" width="100" x="265" y="332" as="geometry" />
+        </mxCell>
+        <mxCell id="63" parent="1" style="text;html=1;fontSize=9;fontColor=#555555;verticalAlign=middle;align=left;" value="Yes" vertex="1">
+          <mxGeometry height="16" width="30" x="206" y="552" as="geometry" />
+        </mxCell>
+        <mxCell id="64" parent="1" style="text;html=1;fontSize=9;fontColor=#555555;verticalAlign=middle;align=left;" value="No" vertex="1">
+          <mxGeometry height="16" width="30" x="92" y="503" as="geometry" />
+        </mxCell>
+        <mxCell id="65" parent="1" style="text;html=1;fontSize=9;fontColor=#555555;verticalAlign=middle;align=left;" value="retry / lower level" vertex="1">
+          <mxGeometry height="16" width="96" x="12" y="264" as="geometry" />
+        </mxCell>
+        <mxCell id="66" parent="1" style="text;html=1;fontSize=9;fontColor=#555555;verticalAlign=middle;align=left;" value="key_id" vertex="1">
+          <mxGeometry height="16" width="50" x="880" y="1036" as="geometry" />
+        </mxCell>
+        <mxCell id="67" parent="1" style="text;html=1;fontSize=9;fontColor=#555555;verticalAlign=middle;align=left;" value="Yes" vertex="1">
+          <mxGeometry height="16" width="30" x="1226" y="1003" as="geometry" />
+        </mxCell>
+        <mxCell id="68" parent="1" style="text;html=1;fontSize=9;fontColor=#555555;verticalAlign=middle;align=left;" value="No (Level 1)" vertex="1">
+          <mxGeometry height="16" width="70" x="1268" y="952" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
