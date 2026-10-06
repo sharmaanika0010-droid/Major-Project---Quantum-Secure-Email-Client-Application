@@ -8,13 +8,14 @@ from typing import Callable
 import customtkinter as ctk
 
 from qumail.email.imap_client import IMAPClient, IMAPError, PROVIDERS
+from qumail.email.smtp_client import SMTPClient
 
 ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("blue")
 
 
 class LoginFrame(ctk.CTkFrame):
-    """on_success(client) is called with a connected IMAPClient."""
+    """on_success(imap, smtp) is called with a connected IMAPClient and a ready SMTPClient."""
 
     def __init__(self, master, on_success: Callable[[IMAPClient], None]):
         super().__init__(master, fg_color="transparent")
@@ -95,7 +96,7 @@ class LoginFrame(ctk.CTkFrame):
             except IMAPError as exc:
                 self.after(0, self._fail, str(exc))
                 return
-            self.after(0, self._ok, client)
+            self.after(0, self._ok, client, SMTPClient(prov, addr, pwd))
 
         threading.Thread(target=work, daemon=True).start()  # keep UI responsive
 
@@ -103,6 +104,6 @@ class LoginFrame(ctk.CTkFrame):
         self.sign_in.configure(state="normal", text="Sign in")
         self.error.configure(text=message)
 
-    def _ok(self, client: IMAPClient):
+    def _ok(self, client: IMAPClient, smtp: SMTPClient):
         self.sign_in.configure(state="normal", text="Sign in")
-        self.on_success(client)
+        self.on_success(client, smtp)

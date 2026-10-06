@@ -2,7 +2,7 @@
 
 SCRUM-16 (Day 3): list of newest messages.
 SCRUM-24 (Day 6): inbox rendering, attachment download + preview.
-Decrypt button is wired on Day 7+ (crypto modules by Umang).
+SCRUM-28 (Day 7): Compose button, Level 1 receive path through qumail.crypto.envelope.
 """
 from __future__ import annotations
 
@@ -12,7 +12,10 @@ from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 
+from qumail.crypto import envelope
 from qumail.email.imap_client import Attachment, EmailMessage, IMAPClient, IMAPError
+from qumail.email.smtp_client import SMTPClient
+from qumail.gui.compose import ComposeWindow
 
 LEVEL_COLORS = {1: ("gray70", "gray40"), 2: "#2e86de", 3: "#8e44ad", 4: "#c0392b"}
 LEVEL_NAMES = {1: "Plain", 2: "L2 · Quantum AES", 3: "L3 · One-Time Pad", 4: "L4 · Extra"}
@@ -21,9 +24,10 @@ PREVIEW_IMAGE_TYPES = ("image/png", "image/jpeg", "image/gif", "image/bmp", "ima
 
 
 class InboxFrame(ctk.CTkFrame):
-    def __init__(self, master, client: IMAPClient, on_logout):
+    def __init__(self, master, client: IMAPClient, smtp: SMTPClient, on_logout):
         super().__init__(master, fg_color="transparent")
         self.client = client
+        self.smtp = smtp
         self.current: EmailMessage | None = None
 
         # -- top bar ----------------------------------------------------
@@ -32,6 +36,8 @@ class InboxFrame(ctk.CTkFrame):
         ctk.CTkLabel(top, text=f"Inbox — {client.address}", font=("Segoe UI", 16, "bold")).pack(side="left")
         ctk.CTkButton(top, text="Logout", width=80, command=on_logout).pack(side="right")
         ctk.CTkButton(top, text="Refresh", width=80, command=self.refresh).pack(side="right", padx=6)
+        ctk.CTkButton(top, text="✉ Compose", width=100, fg_color="#2ecc71", hover_color="#27ae60",
+                      text_color="black", command=self.compose).pack(side="right", padx=6)
         self.status = ctk.CTkLabel(self, text="Loading…", text_color="gray")
         self.status.pack(anchor="w", padx=16)
 
@@ -128,13 +134,15 @@ class InboxFrame(ctk.CTkFrame):
         self.r_meta.configure(text=f"From: {msg.sender}\nTo: {msg.to}\nDate: {msg.date}")
         self.r_level.configure(text=LEVEL_NAMES.get(msg.level, f"L{msg.level}"), fg_color=LEVEL_COLORS.get(msg.level, "gray"))
 
-        if msg.is_encrypted:
+        try:
+            text = envelope.decrypt(msg.level, msg.body, key_id=msg.key_id) if msg.level == 1 else None
+        except envelope.QuMailCryptoError:
+            text = None
+        if text is None:
             text = ("🔒 This message is encrypted with QuMail "
                     f"(Level {msg.level}, key_id={msg.key_id or '?'}).\n"
-                    "Decrypt will be available once the crypto module is merged (Day 7+).\n\n"
-                    "--- raw envelope ---\n" + msg.body)
-        else:
-            text = msg.body
+                    "Decrypt will be available once the Level {0} module is registered.\n\n".format(msg.level)
+                    + "--- raw envelope ---\n" + msg.body)
         self._set_body(text)
 
         for w in self.r_attach.winfo_children():
@@ -147,6 +155,9 @@ class InboxFrame(ctk.CTkFrame):
                 ctk.CTkLabel(row, text=f"📎 {att.filename}  ({att.size_kb} KB · {att.content_type})", anchor="w").pack(side="left", padx=8, fill="x", expand=True)
                 ctk.CTkButton(row, text="Download", width=84, command=lambda a=att: self.download(a)).pack(side="right", padx=(4, 6), pady=4)
                 ctk.CTkButton(row, text="Preview", width=74, fg_color="gray50", command=lambda a=att: self.preview(a)).pack(side="right", pady=4)
+
+    def compose(self):
+        ComposeWindow(self, self.smtp, on_sent=lambda _id, lvl: self.status.configure(text=f"Message sent (Level {lvl}) — press Refresh to see it in Sent/Inbox"))
 
     def _set_body(self, text: str):
         self.r_body.configure(state="normal")

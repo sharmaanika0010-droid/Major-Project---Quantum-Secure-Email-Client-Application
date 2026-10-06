@@ -18,6 +18,7 @@ class QuMailApp(ctk.CTk):
         self.minsize(560, 560)
         self.current = None
         self.client = None
+        self.smtp = None
         self.show_login()
 
     def _swap(self, frame):
@@ -32,9 +33,10 @@ class QuMailApp(ctk.CTk):
             self.client = None
         self._swap(LoginFrame(self, on_success=self.show_inbox))
 
-    def show_inbox(self, client):
+    def show_inbox(self, client, smtp):
         self.client = client
-        self._swap(InboxFrame(self, client, on_logout=self.show_login))
+        self.smtp = smtp
+        self._swap(InboxFrame(self, client, smtp, on_logout=self.show_login))
 
 
 if __name__ == "__main__":
