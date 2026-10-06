@@ -18,11 +18,13 @@ Research and document how the application will connect to Gmail and Yahoo Mail u
 ## Gmail Configuration
 
 ### IMAP
+
 - Server: `imap.gmail.com`
 - Port: `993`
 - Security: SSL/TLS
 
 ### SMTP
+
 - Server: `smtp.gmail.com`
 - Port: `465` (SSL) or `587` (STARTTLS)
 - Security: SSL/TLS or STARTTLS
@@ -30,11 +32,13 @@ Research and document how the application will connect to Gmail and Yahoo Mail u
 ## Yahoo Configuration
 
 ### IMAP
+
 - Server: `imap.mail.yahoo.com`
 - Port: `993`
 - Security: SSL/TLS
 
 ### SMTP
+
 - Server: `smtp.mail.yahoo.com`
 - Port: `465` (SSL) or `587` (STARTTLS)
 - Security: SSL/TLS or STARTTLS
@@ -57,7 +61,8 @@ Normal email passwords should not be stored directly in the application.
 
 ## Expected Outcome
 
-A documented authentication and mail-server configuration that can be used later to implement secure Gmail/Yahoo email sending and receiving.
+A documented authentication and mail-server configuration that can be used later to implement secure Gmail/Yahoo email
+sending and receiving.
 
 ## Status
 
