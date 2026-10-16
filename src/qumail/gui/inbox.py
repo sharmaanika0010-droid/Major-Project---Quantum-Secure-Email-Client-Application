@@ -3,7 +3,7 @@
 SCRUM-16 (Day 3): list of newest messages.
 SCRUM-24 (Day 6): inbox rendering, attachment download + preview.
 SCRUM-28 (Day 7): Compose button, Level 1 receive path through qumail.crypto.envelope.
-Day 8: Level 2 decrypt (key by key_id from KM, AES-GCM body + .qenc attachments).
+Day 8/9: Level 2/3 decrypt via qumail.crypto.pipeline (key by key_id from KM).
 """
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 
-from qumail.crypto import envelope
+from qumail.crypto import envelope, pipeline
 from qumail.email.imap_client import Attachment, EmailMessage, IMAPClient, IMAPError
 from qumail.email.smtp_client import SMTPClient
 from qumail.gui.compose import ComposeWindow
@@ -128,21 +128,9 @@ class InboxFrame(ctk.CTkFrame):
                 self.after(0, lambda: self._set_body(f"Error: {exc}\n\nPress Refresh and try again."))
                 return
             note = None
-            if msg.level >= 2 and msg.key_id:
-                # fetch the quantum key by key_id and decrypt body + attachments in the worker thread
+            if msg.level >= 2:
                 try:
-                    key = self.km.get_key(msg.key_id)
-                    msg.body = envelope.decrypt(msg.level, msg.body, key_material=key.material)
-                    if msg.level == 2:
-                        from qumail.crypto import level2
-                        aes_key = level2.derive_key(key.material)
-                        for att in msg.attachments:
-                            if att.filename.endswith(".qenc"):
-                                att.data = level2.decrypt_bytes(att.data, aes_key)
-                                att.filename = att.filename[:-5]
-                                import mimetypes
-                                att.content_type = mimetypes.guess_type(att.filename)[0] or "application/octet-stream"
-                    note = f"🔓 Decrypted with quantum key {msg.key_id} (Level {msg.level})"
+                    note = pipeline.open_message(msg, self.km)
                 except (KMError, envelope.QuMailCryptoError) as exc:
                     note = f"🔒 Cannot decrypt: {exc}"
                     msg.level = -msg.level  # mark as failed for the renderer

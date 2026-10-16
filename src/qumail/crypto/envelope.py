@@ -101,5 +101,8 @@ def load_levels() -> None:
     for mod in ("qumail.crypto.level2", "qumail.crypto.level3", "qumail.crypto.level4"):
         try:
             importlib.import_module(mod)
-        except ImportError:
-            pass  # module not written yet
+        except ModuleNotFoundError as exc:
+            if exc.name == mod:
+                continue  # level module not written yet
+            import sys
+            print(f"[QuMail] {mod} disabled — missing dependency: {exc.name} (pip install -r requirements.txt)", file=sys.stderr)
