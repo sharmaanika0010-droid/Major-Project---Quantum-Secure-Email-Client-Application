@@ -9,6 +9,7 @@ import customtkinter as ctk
 
 from qumail.email.imap_client import IMAPClient, IMAPError, PROVIDERS
 from qumail.email.smtp_client import SMTPClient
+from qumail.km.client import KMClient, KMError
 
 ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("blue")
@@ -57,8 +58,7 @@ class LoginFrame(ctk.CTkFrame):
         self.km_url = ctk.CTkEntry(row2, placeholder_text="http://localhost:5000")
         self.km_url.insert(0, os.getenv("QUMAIL_KM_URL", "http://localhost:5000"))
         self.km_url.pack(side="left", fill="x", expand=True)
-        ctk.CTkButton(row2, text="Test", width=70, fg_color="gray70", text_color="black",
-                      hover_color="gray60", state="disabled").pack(side="left", padx=(6, 6))
+        ctk.CTkButton(row2, text="Test", width=70, command=self._test_km).pack(side="left", padx=(6, 6))
         self.km_status = ctk.CTkLabel(row2, text="● KM not checked", text_color="gray")
         self.km_status.pack(side="left")
 
@@ -74,6 +74,20 @@ class LoginFrame(ctk.CTkFrame):
         self.password.bind("<Return>", lambda _e: self._login())
 
     # -- helpers ----------------------------------------------------------
+    def _test_km(self):
+        self.km_status.configure(text="● checking…", text_color="gray")
+        url = self.km_url.get().strip()
+
+        def work():
+            try:
+                st = KMClient(url).status()
+                txt, col = f"● KM OK — {st.get('available', '?')} keys available", "#2ecc71"
+            except KMError as exc:
+                txt, col = f"● {exc}", "#e74c3c"
+            self.after(0, lambda: self.km_status.configure(text=txt[:60], text_color=col))
+
+        threading.Thread(target=work, daemon=True).start()
+
     def _toggle_pw(self):
         showing = self.password.cget("show") == ""
         self.password.configure(show="•" if showing else "")
@@ -96,7 +110,7 @@ class LoginFrame(ctk.CTkFrame):
             except IMAPError as exc:
                 self.after(0, self._fail, str(exc))
                 return
-            self.after(0, self._ok, client, SMTPClient(prov, addr, pwd))
+            self.after(0, self._ok, client, SMTPClient(prov, addr, pwd), KMClient(self.km_url.get().strip()))
 
         threading.Thread(target=work, daemon=True).start()  # keep UI responsive
 
@@ -104,6 +118,6 @@ class LoginFrame(ctk.CTkFrame):
         self.sign_in.configure(state="normal", text="Sign in")
         self.error.configure(text=message)
 
-    def _ok(self, client: IMAPClient, smtp: SMTPClient):
+    def _ok(self, client: IMAPClient, smtp: SMTPClient, km: KMClient):
         self.sign_in.configure(state="normal", text="Sign in")
-        self.on_success(client, smtp)
+        self.on_success(client, smtp, km)

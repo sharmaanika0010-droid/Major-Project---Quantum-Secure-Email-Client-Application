@@ -3,6 +3,7 @@
 SCRUM-16 (Day 3): list of newest messages.
 SCRUM-24 (Day 6): inbox rendering, attachment download + preview.
 SCRUM-28 (Day 7): Compose button, Level 1 receive path through qumail.crypto.envelope.
+Day 8: Level 2 decrypt (key by key_id from KM, AES-GCM body + .qenc attachments).
 """
 from __future__ import annotations
 
@@ -16,6 +17,7 @@ from qumail.crypto import envelope
 from qumail.email.imap_client import Attachment, EmailMessage, IMAPClient, IMAPError
 from qumail.email.smtp_client import SMTPClient
 from qumail.gui.compose import ComposeWindow
+from qumail.km.client import KMClient, KMError
 
 LEVEL_COLORS = {1: ("gray70", "gray40"), 2: "#2e86de", 3: "#8e44ad", 4: "#c0392b"}
 LEVEL_NAMES = {1: "Plain", 2: "L2 · Quantum AES", 3: "L3 · One-Time Pad", 4: "L4 · Extra"}
@@ -24,10 +26,11 @@ PREVIEW_IMAGE_TYPES = ("image/png", "image/jpeg", "image/gif", "image/bmp", "ima
 
 
 class InboxFrame(ctk.CTkFrame):
-    def __init__(self, master, client: IMAPClient, smtp: SMTPClient, on_logout):
+    def __init__(self, master, client: IMAPClient, smtp: SMTPClient, km: KMClient, on_logout):
         super().__init__(master, fg_color="transparent")
         self.client = client
         self.smtp = smtp
+        self.km = km
         self.current: EmailMessage | None = None
 
         # -- top bar ----------------------------------------------------
@@ -66,8 +69,8 @@ class InboxFrame(ctk.CTkFrame):
         def work():
             try:
                 items = self.client.fetch_inbox(limit=25)
-            except IMAPError as exc:
-                self.after(0, lambda: self.status.configure(text=f"Error: {exc}"))
+            except Exception as exc:  # noqa: BLE001 - never leave the UI stuck on "Loading…"
+                self.after(0, lambda: self.status.configure(text=f"Error: {exc} — press Refresh"))
                 return
             self.after(0, self._render_list, items)
 
@@ -121,28 +124,46 @@ class InboxFrame(ctk.CTkFrame):
         def work():
             try:
                 msg = self.client.fetch_message(uid)
-            except IMAPError as exc:
-                self.after(0, lambda: self._set_body(f"Error: {exc}"))
+            except Exception as exc:  # noqa: BLE001
+                self.after(0, lambda: self._set_body(f"Error: {exc}\n\nPress Refresh and try again."))
                 return
-            self.after(0, self._render_message, msg)
+            note = None
+            if msg.level >= 2 and msg.key_id:
+                # fetch the quantum key by key_id and decrypt body + attachments in the worker thread
+                try:
+                    key = self.km.get_key(msg.key_id)
+                    msg.body = envelope.decrypt(msg.level, msg.body, key_material=key.material)
+                    if msg.level == 2:
+                        from qumail.crypto import level2
+                        aes_key = level2.derive_key(key.material)
+                        for att in msg.attachments:
+                            if att.filename.endswith(".qenc"):
+                                att.data = level2.decrypt_bytes(att.data, aes_key)
+                                att.filename = att.filename[:-5]
+                                import mimetypes
+                                att.content_type = mimetypes.guess_type(att.filename)[0] or "application/octet-stream"
+                    note = f"🔓 Decrypted with quantum key {msg.key_id} (Level {msg.level})"
+                except (KMError, envelope.QuMailCryptoError) as exc:
+                    note = f"🔒 Cannot decrypt: {exc}"
+                    msg.level = -msg.level  # mark as failed for the renderer
+            self.after(0, self._render_message, msg, note)
 
         threading.Thread(target=work, daemon=True).start()
 
-    def _render_message(self, msg: EmailMessage):
+    def _render_message(self, msg: EmailMessage, note: str | None = None):
         self.current = msg
+        failed = msg.level < 0
+        level = abs(msg.level)
         self.r_subject.configure(text=msg.subject)
         self.r_meta.configure(text=f"From: {msg.sender}\nTo: {msg.to}\nDate: {msg.date}")
-        self.r_level.configure(text=LEVEL_NAMES.get(msg.level, f"L{msg.level}"), fg_color=LEVEL_COLORS.get(msg.level, "gray"))
+        self.r_level.configure(text=LEVEL_NAMES.get(level, f"L{level}"), fg_color=LEVEL_COLORS.get(level, "gray"))
 
-        try:
-            text = envelope.decrypt(msg.level, msg.body, key_id=msg.key_id) if msg.level == 1 else None
-        except envelope.QuMailCryptoError:
-            text = None
-        if text is None:
-            text = ("🔒 This message is encrypted with QuMail "
-                    f"(Level {msg.level}, key_id={msg.key_id or '?'}).\n"
-                    "Decrypt will be available once the Level {0} module is registered.\n\n".format(msg.level)
-                    + "--- raw envelope ---\n" + msg.body)
+        if failed:
+            text = f"{note}\n\n--- raw envelope ---\n{msg.body}"
+        elif level == 1:
+            text = envelope.decrypt(1, msg.body)
+        else:
+            text = f"{note}\n\n{msg.body}"
         self._set_body(text)
 
         for w in self.r_attach.winfo_children():
@@ -157,7 +178,7 @@ class InboxFrame(ctk.CTkFrame):
                 ctk.CTkButton(row, text="Preview", width=74, fg_color="gray50", command=lambda a=att: self.preview(a)).pack(side="right", pady=4)
 
     def compose(self):
-        ComposeWindow(self, self.smtp, on_sent=lambda _id, lvl: self.status.configure(text=f"Message sent (Level {lvl}) — press Refresh to see it in Sent/Inbox"))
+        ComposeWindow(self, self.smtp, self.km, on_sent=lambda _id, lvl: self.status.configure(text=f"Message sent (Level {lvl}) — press Refresh to see it in Sent/Inbox"))
 
     def _set_body(self, text: str):
         self.r_body.configure(state="normal")
