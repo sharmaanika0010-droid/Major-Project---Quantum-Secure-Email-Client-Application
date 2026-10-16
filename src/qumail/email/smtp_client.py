@@ -10,7 +10,7 @@ import ssl
 from email.message import EmailMessage
 from email.utils import formatdate, make_msgid
 from pathlib import Path
-from typing import Dict, Iterable, Optional
+from typing import Dict, Iterable, Optional, Tuple, Union
 
 from qumail.email.imap_client import PROVIDERS
 
@@ -33,7 +33,7 @@ class SMTPClient:
         subject: str,
         body: str,
         headers: Optional[Dict[str, str]] = None,
-        attachments: Iterable[str] = (),
+        attachments: Iterable[Union[str, Tuple[str, bytes]]] = (),
     ) -> str:
         """Send one message; returns the Message-ID."""
         msg = EmailMessage()
@@ -46,11 +46,15 @@ class SMTPClient:
             msg[k] = v
         msg.set_content(body)
 
-        for path in attachments:
-            p = Path(path)
-            ctype, _ = mimetypes.guess_type(p.name)
+        for item in attachments:
+            if isinstance(item, tuple):          # (filename, bytes) — already-encrypted blobs
+                name, data = item
+            else:                                # path on disk
+                p = Path(item)
+                name, data = p.name, p.read_bytes()
+            ctype, _ = mimetypes.guess_type(name)
             maintype, subtype = (ctype or "application/octet-stream").split("/", 1)
-            msg.add_attachment(p.read_bytes(), maintype=maintype, subtype=subtype, filename=p.name)
+            msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=name)
 
         try:
             with smtplib.SMTP_SSL(self.host, 465, context=ssl.create_default_context(), timeout=30) as s:

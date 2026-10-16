@@ -1,4 +1,4 @@
-"""Compose window — SCRUM-28 (Day 7): Level 1 send wired end-to-end.
+"""Compose window — SCRUM-28 (Day 7): Level 1. Day 8: Level 2 via KM key + AES-GCM.
 
 Security level dropdown lists only the levels registered in qumail.crypto.envelope,
 so Levels 2/3/4 appear automatically once their modules register.
@@ -13,12 +13,14 @@ import customtkinter as ctk
 
 from qumail.crypto import envelope
 from qumail.email.smtp_client import SMTPClient, SMTPError
+from qumail.km.client import KMClient, KMError
 
 
 class ComposeWindow(ctk.CTkToplevel):
-    def __init__(self, master, smtp: SMTPClient, on_sent=None):
+    def __init__(self, master, smtp: SMTPClient, km: KMClient, on_sent=None):
         super().__init__(master)
         self.smtp = smtp
+        self.km = km
         self.on_sent = on_sent
         self.files: list[str] = []
         self.title("QuMail — New message")
@@ -80,9 +82,20 @@ class ComposeWindow(ctk.CTkToplevel):
 
         def work():
             try:
-                prepared = envelope.encrypt(level, text)
-                msg_id = self.smtp.send(to, subject, prepared.body, prepared.headers(), self.files)
-            except (envelope.QuMailCryptoError, SMTPError, OSError) as exc:
+                files = list(self.files)
+                if level == 1:
+                    prepared = envelope.encrypt(1, text)
+                else:
+                    from qumail.crypto import level2
+                    self.after(0, lambda: self.status.configure(text="Requesting quantum key from KM…"))
+                    key = self.km.request_key(level2.KEY_BYTES_NEEDED)
+                    prepared = envelope.encrypt(level, text, key_material=key.material, key_id=key.key_id)
+                    if level == 2 and files:  # encrypt attachments with the same derived key
+                        aes_key = level2.derive_key(key.material)
+                        files = [(Path(f).name + ".qenc", level2.encrypt_bytes(Path(f).read_bytes(), aes_key)) for f in files]
+                self.after(0, lambda: self.status.configure(text="Sending…"))
+                msg_id = self.smtp.send(to, subject, prepared.body, prepared.headers(), files)
+            except (envelope.QuMailCryptoError, SMTPError, KMError, OSError) as exc:
                 self.after(0, self._fail, str(exc))
                 return
             self.after(0, self._ok, msg_id, level)

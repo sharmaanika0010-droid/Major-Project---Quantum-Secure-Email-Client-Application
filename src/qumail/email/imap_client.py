@@ -2,11 +2,13 @@
 
 SCRUM-16 (Day 3): login + fetch inbox list.
 SCRUM-24 (Day 6): fetch full message (body + attachments) for rendering/preview.
+Day 8: auto-reconnect when the socket is dropped (idle timeout / antivirus mail shield).
 """
 from __future__ import annotations
 
 import email
 import imaplib
+import ssl
 from dataclasses import dataclass
 from email.header import decode_header
 from typing import List, Optional
@@ -115,6 +117,25 @@ class IMAPClient:
         except OSError as exc:
             raise IMAPError(f"Cannot reach {self.host}: {exc}") from exc
 
+    def _reconnect(self) -> None:
+        try:
+            self.close()
+        except Exception:  # noqa: BLE001 - the socket is already broken
+            self._conn = None
+        self.connect()
+
+    def _with_retry(self, fn):
+        """Run fn(); if the IMAP socket is dead, reconnect once and retry."""
+        if self._conn is None:
+            self.connect()
+        try:
+            return fn()
+        except (imaplib.IMAP4.abort, OSError, ssl.SSLError):
+            self._reconnect()
+            return fn()
+        except imaplib.IMAP4.error as exc:
+            raise IMAPError(f"IMAP error: {exc}") from exc
+
     def close(self) -> None:
         if self._conn is not None:
             try:
@@ -125,8 +146,9 @@ class IMAPClient:
     # -- inbox ----------------------------------------------------------
     def fetch_inbox(self, limit: int = 20) -> List[EmailSummary]:
         """Return the newest `limit` messages (headers only, fast)."""
-        if self._conn is None:
-            raise IMAPError("Not connected")
+        return self._with_retry(lambda: self._fetch_inbox(limit))
+
+    def _fetch_inbox(self, limit: int) -> List[EmailSummary]:
         status, _ = self._conn.select("INBOX", readonly=True)
         if status != "OK":
             raise IMAPError("Cannot open INBOX")
@@ -161,8 +183,10 @@ class IMAPClient:
     # -- single message (Day 6) ----------------------------------------
     def fetch_message(self, uid: str) -> EmailMessage:
         """Download one full message: headers, text body and attachments."""
-        if self._conn is None:
-            raise IMAPError("Not connected")
+        return self._with_retry(lambda: self._fetch_message(uid))
+
+    def _fetch_message(self, uid: str) -> EmailMessage:
+        self._conn.select("INBOX", readonly=True)
         status, data = self._conn.uid("fetch", uid.encode(), "(BODY.PEEK[])")
         if status != "OK" or not data or data[0] is None:
             raise IMAPError(f"Cannot fetch message {uid}")

@@ -1,6 +1,6 @@
 """QuMail message envelope + Level 1 (plain) codec.
 
-SCRUM-28 (Day 7): Level 1 wired end-to-end. Levels 2/3/4 plug into the same
+SCRUM-28 (Day 7): Level 1 wired end-to-end. Level 2 in level2.py (SCRUM-Day8). Levels 3/4 plug into the same
 `encrypt()` / `decrypt()` entry points (crypto modules by Umang).
 
 Envelope (mail body for level >= 2) is a JSON object:
@@ -79,9 +79,27 @@ def decrypt(level: int, body: str, **kw) -> str:
 
 
 def parse_envelope(body: str) -> Optional[dict]:
-    """Return the JSON envelope dict if `body` is a QuMail envelope, else None."""
+    """Return the JSON envelope dict if `body` contains a QuMail envelope, else None.
+
+    Tolerates text appended after the JSON (e.g. antivirus footers, signatures).
+    """
+    if not body:
+        return None
+    start = body.find("{")
+    if start < 0:
+        return None
     try:
-        obj = json.loads(body.strip())
-    except (ValueError, TypeError):
+        obj, _ = json.JSONDecoder().raw_decode(body[start:])
+    except ValueError:
         return None
     return obj if isinstance(obj, dict) and obj.get("qumail") == 1 else None
+
+
+def load_levels() -> None:
+    """Import level modules so they register themselves (call once at app start)."""
+    import importlib
+    for mod in ("qumail.crypto.level2", "qumail.crypto.level3", "qumail.crypto.level4"):
+        try:
+            importlib.import_module(mod)
+        except ImportError:
+            pass  # module not written yet
