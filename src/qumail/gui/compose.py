@@ -1,4 +1,4 @@
-"""Compose window — SCRUM-28 (Day 7): Level 1. Day 8: Level 2 via KM key + AES-GCM.
+"""Compose window — Level 1 (Day 7), Level 2 (Day 8), Level 3 OTP + key-length check (Day 9).
 
 Security level dropdown lists only the levels registered in qumail.crypto.envelope,
 so Levels 2/3/4 appear automatically once their modules register.
@@ -11,7 +11,7 @@ from tkinter import filedialog
 
 import customtkinter as ctk
 
-from qumail.crypto import envelope
+from qumail.crypto import envelope, pipeline
 from qumail.email.smtp_client import SMTPClient, SMTPError
 from qumail.km.client import KMClient, KMError
 
@@ -57,7 +57,7 @@ class ComposeWindow(ctk.CTkToplevel):
 
         brow = ctk.CTkFrame(self, fg_color="transparent")
         brow.pack(fill="x", padx=16, pady=12)
-        self.status = ctk.CTkLabel(brow, text="", text_color="gray", anchor="w")
+        self.status = ctk.CTkLabel(brow, text="", text_color="gray", anchor="w", wraplength=380, justify="left")
         self.status.pack(side="left", fill="x", expand=True)
         ctk.CTkButton(brow, text="Cancel", width=80, fg_color="gray50", command=self.destroy).pack(side="right", padx=(6, 0))
         self.send_btn = ctk.CTkButton(brow, text="Send", width=100, command=self._send)
@@ -82,17 +82,13 @@ class ComposeWindow(ctk.CTkToplevel):
 
         def work():
             try:
-                files = list(self.files)
-                if level == 1:
-                    prepared = envelope.encrypt(1, text)
-                else:
-                    from qumail.crypto import level2
+                problem = pipeline.check_capacity(level, text, self.files, self.km)
+                if problem:
+                    self.after(0, self._fail, problem)
+                    return
+                if level >= 2:
                     self.after(0, lambda: self.status.configure(text="Requesting quantum key from KM…"))
-                    key = self.km.request_key(level2.KEY_BYTES_NEEDED)
-                    prepared = envelope.encrypt(level, text, key_material=key.material, key_id=key.key_id)
-                    if level == 2 and files:  # encrypt attachments with the same derived key
-                        aes_key = level2.derive_key(key.material)
-                        files = [(Path(f).name + ".qenc", level2.encrypt_bytes(Path(f).read_bytes(), aes_key)) for f in files]
+                prepared, files = pipeline.prepare(level, text, self.files, self.km)
                 self.after(0, lambda: self.status.configure(text="Sending…"))
                 msg_id = self.smtp.send(to, subject, prepared.body, prepared.headers(), files)
             except (envelope.QuMailCryptoError, SMTPError, KMError, OSError) as exc:
