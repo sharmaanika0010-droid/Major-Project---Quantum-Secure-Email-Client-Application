@@ -15,7 +15,7 @@ from tkinter import filedialog, messagebox
 import customtkinter as ctk
 
 from qumail.crypto import envelope, pipeline
-from qumail.email.imap_client import Attachment, EmailMessage, IMAPClient, IMAPError
+from qumail.email.imap_client import Attachment, EmailMessage, IMAPClient
 from qumail.email.smtp_client import SMTPClient
 from qumail.gui.compose import ComposeWindow
 from qumail.km.client import KMClient, KMError
@@ -74,7 +74,7 @@ class InboxFrame(ctk.CTkFrame):
             try:
                 items = self.client.fetch_inbox(limit=25)
             except Exception as exc:  # noqa: BLE001 - never leave the UI stuck on "Loading…"
-                self.after(0, lambda: self.status.configure(text=f"Error: {exc} — press Refresh"))
+                self.after(0, lambda e=exc: self.status.configure(text=f"Error: {e} — press Refresh"))
                 return
             self.after(0, self._render_list, items)
 
@@ -145,7 +145,7 @@ class InboxFrame(ctk.CTkFrame):
             try:
                 msg = self.client.fetch_message(uid)
             except Exception as exc:  # noqa: BLE001
-                self.after(0, lambda: self._set_body(f"Error: {exc}\n\nPress Refresh and try again."))
+                self.after(0, lambda e=exc: self._set_body(f"Error: {e}\n\nPress Refresh and try again."))
                 return
             note = None
             if msg.level >= 2:

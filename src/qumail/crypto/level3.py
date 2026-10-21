@@ -14,8 +14,8 @@ Attachment blob (<name>.qenc):  offset(4 bytes BE) | ciphertext
 from __future__ import annotations
 
 import base64
-import hmac
 import hashlib
+import hmac
 import json
 from typing import List, Tuple
 
@@ -29,7 +29,7 @@ def key_bytes_needed(body_len: int, attachment_sizes: List[int]) -> int:
 
 
 def _xor(data: bytes, key: bytes) -> bytes:
-    return bytes(a ^ b for a, b in zip(data, key))
+    return bytes(a ^ b for a, b in zip(data, key, strict=False))
 
 
 def _mac(key_material: bytes, total_len: int, *chunks: bytes) -> bytes:

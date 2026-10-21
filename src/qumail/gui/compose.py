@@ -86,10 +86,12 @@ class ComposeWindow(ctk.CTkToplevel):
         all_levels = list(self._level_by_label.keys())
         if error is not None:
             self.km_lbl.configure(text="🔑 KM offline — only Level 1", text_color="#e74c3c")
-            self.level.configure(values=plain_only); self.level.set(plain_only[0])
+            self.level.configure(values=plain_only)
+            self.level.set(plain_only[0])
         elif available == 0:
             self.km_lbl.configure(text="🔑 Key bank EMPTY — only Level 1", text_color="#e74c3c")
-            self.level.configure(values=plain_only); self.level.set(plain_only[0])
+            self.level.configure(values=plain_only)
+            self.level.set(plain_only[0])
         elif available <= 10:
             self.km_lbl.configure(text=f"🔑 {available} keys left (low)", text_color="#f39c12")
             self.level.configure(values=all_levels)
