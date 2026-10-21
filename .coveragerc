@@ -1,0 +1,10 @@
+[run]
+source = qumail
+omit =
+    */gui/*
+    */__init__.py
+
+[report]
+show_missing = true
+skip_covered = false
+precision = 1
