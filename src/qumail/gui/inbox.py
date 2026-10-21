@@ -4,6 +4,7 @@ SCRUM-16 (Day 3): list of newest messages.
 SCRUM-24 (Day 6): inbox rendering, attachment download + preview.
 SCRUM-28 (Day 7): Compose button, Level 1 receive path through qumail.crypto.envelope.
 Day 8/9: Level 2/3 decrypt via qumail.crypto.pipeline (key by key_id from KM).
+Day 10 (SCRUM-39): KM key-bank indicator, depletion warning, consumed-key error.
 """
 from __future__ import annotations
 
@@ -41,6 +42,8 @@ class InboxFrame(ctk.CTkFrame):
         ctk.CTkButton(top, text="Refresh", width=80, command=self.refresh).pack(side="right", padx=6)
         ctk.CTkButton(top, text="✉ Compose", width=100, fg_color="#2ecc71", hover_color="#27ae60",
                       text_color="black", command=self.compose).pack(side="right", padx=6)
+        self.km_lbl = ctk.CTkLabel(top, text="🔑 KM…", text_color="gray", font=("Segoe UI", 12))
+        self.km_lbl.pack(side="right", padx=10)
         self.status = ctk.CTkLabel(self, text="Loading…", text_color="gray")
         self.status.pack(anchor="w", padx=16)
 
@@ -65,6 +68,7 @@ class InboxFrame(ctk.CTkFrame):
         for w in self.list.winfo_children():
             w.destroy()
         self.status.configure(text="Loading…")
+        self._refresh_km()
 
         def work():
             try:
@@ -74,6 +78,22 @@ class InboxFrame(ctk.CTkFrame):
                 return
             self.after(0, self._render_list, items)
 
+        threading.Thread(target=work, daemon=True).start()
+
+    def _refresh_km(self):
+        def work():
+            try:
+                st = self.km.status()
+                a, t = int(st.get("available", 0)), int(st.get("total", 0))
+                if a == 0:
+                    txt, col = f"🔑 Key bank EMPTY (0/{t}) — only Level 1 possible", "#e74c3c"
+                elif a <= 10:
+                    txt, col = f"🔑 {a}/{t} keys left — running low", "#f39c12"
+                else:
+                    txt, col = f"🔑 {a}/{t} quantum keys", "#2ecc71"
+            except KMError:
+                txt, col = "🔑 KM offline — encrypted mail cannot be sent/opened", "#e74c3c"
+            self.after(0, lambda: self.km_lbl.configure(text=txt, text_color=col))
         threading.Thread(target=work, daemon=True).start()
 
     def _render_list(self, items):
