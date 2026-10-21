@@ -7,7 +7,7 @@ from typing import Callable
 
 import customtkinter as ctk
 
-from qumail.email.imap_client import IMAPClient, IMAPError, PROVIDERS
+from qumail.email.imap_client import PROVIDERS, IMAPClient, IMAPError
 from qumail.email.smtp_client import SMTPClient
 from qumail.km.client import KMClient, KMError
 

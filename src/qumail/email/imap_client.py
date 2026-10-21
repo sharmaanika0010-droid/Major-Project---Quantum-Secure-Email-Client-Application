@@ -7,13 +7,13 @@ Day 8: auto-reconnect when the socket is dropped (idle timeout / antivirus mail 
 from __future__ import annotations
 
 import email
+import html as _html
 import imaplib
+import re
 import ssl
 from dataclasses import dataclass
 from email.header import decode_header
 from typing import List, Optional
-import html as _html
-import re
 
 # Provider → (IMAP host, SMTP host). SMTP used later (Day 5).
 PROVIDERS = {
