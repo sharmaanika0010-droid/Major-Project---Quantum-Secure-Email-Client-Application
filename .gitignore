@@ -23,3 +23,5 @@ Thumbs.db
 
 # PyInstaller
 *.spec
+# KM simulator state (contains key material, changes on every send)
+SCRUM_Works/SCRUM-14/keybank.csv

@@ -66,6 +66,15 @@ def prepare(level: int, text: str, files: List[str], km: KMClient):
     raise QuMailCryptoError(f"Level {level} not available")
 
 
+def burn_key(prepared, km: KMClient) -> None:
+    """Send failed after a key was reserved: mark it CONSUMED so it is never reused (Day 10)."""
+    if getattr(prepared, "key_id", None):
+        try:
+            km.consume(prepared.key_id)
+        except KMError:
+            pass  # best effort — KM may be down too
+
+
 def open_message(msg, km: KMClient) -> str | None:
     """Decrypt msg in place (body + attachments). Returns a status note or None for Level 1."""
     if msg.level < 2:
