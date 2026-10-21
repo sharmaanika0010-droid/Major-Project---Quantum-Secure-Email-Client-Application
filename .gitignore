@@ -25,3 +25,10 @@ Thumbs.db
 *.spec
 # KM simulator state (contains key material, changes on every send)
 SCRUM_Works/SCRUM-14/keybank.csv
+
+# test / coverage output
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.ruff_cache/
