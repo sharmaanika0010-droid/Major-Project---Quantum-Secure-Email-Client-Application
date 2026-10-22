@@ -171,6 +171,33 @@ def consume():
 	return jsonify({"consumed": key_ids})
 
 
+@app.post("/get_key")
+def get_key_unused():
+	"""SCRUM-20: return one unused key and mark it CONSUMED in the same locked step."""
+	with lock:
+		key = next(
+			(k for k in KEY_BANK.values() if k["status"] == "AVAILABLE"),
+			None,
+		)
+		
+		if key is None:
+			return error(409, "No unused keys left in key bank")
+		
+		key["status"] = "CONSUMED"
+		key["consumed_at"] = now()
+		
+		save()
+	
+	return jsonify({
+		"key_id": key["key_id"],
+		"size": key["size"],
+		"status": key["status"],
+		"created_at": key["created_at"],
+		"consumed_at": key["consumed_at"],
+		"key_material": base64.b64encode(key["material"]).decode(),
+	})
+
+
 @app.get("/keys/<key_id>")
 def get_key(key_id):
 	key = KEY_BANK.get(key_id)

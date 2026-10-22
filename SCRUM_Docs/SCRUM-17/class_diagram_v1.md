@@ -50,7 +50,7 @@ classDiagram
 ```
 
 ## Source of design
-- From project documents: Gmail API + OAuth 2.0, Streamlit UI, `email_service/gmail_adapter.py` path, adapter functions `send_message()`, `list_messages()`, `get_message()`, `parse_message()`, provider-replaceable design, Python `email` package for MIME.
+- From project documents: Gmail API + OAuth 2.0, Streamlit UI, `../../src/email/gmail_adapter.py` path, adapter functions `send_message()`, `list_messages()`, `get_message()`, `parse_message()`, provider-replaceable design, Python `email` package for MIME.
 - My assumptions: the `EmailProvider` abstract class name, the `EmailMessage`/`Attachment` dataclass fields, scopes `gmail.send` + `gmail.readonly`, and fetching attachments lazily via `download_attachment`.
 
 ## Not in v1 (later tickets)

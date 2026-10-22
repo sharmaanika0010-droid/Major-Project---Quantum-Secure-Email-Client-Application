@@ -13,7 +13,7 @@ python km_simulator.py
 Server runs at http://127.0.0.1:8000 (open /keys/status in a browser to check).
 
 ## Key bank
-`keybank.csv` holds the 100 keys (id, size, status, timestamps, base64 key material). Status changes are saved to it, so state survives restarts. Delete it to regenerate a fresh bank. Do not share it: it contains key material.
+`../../src/km_client/keybank.csv` holds the 100 keys (id, size, status, timestamps, base64 key material). Status changes are saved to it, so state survives restarts. Delete it to regenerate a fresh bank. Do not share it: it contains key material.
 
 ## Key states
 AVAILABLE -> RESERVED (issued via `/keys/request`) -> CONSUMED (never reusable)
@@ -38,4 +38,4 @@ curl -X POST http://127.0.0.1:8000/keys/consume -H "Content-Type: application/js
 
 ## Source
 - From project documents: 100 x 1 KB key bank, key states, endpoint list, QK#### key IDs.
-- My assumptions: CSV storage (`keybank.csv`, rewritten on every change), round-up to whole keys, material returned by `GET /keys/{key_id}`.
+- My assumptions: CSV storage (`../../src/km_client/keybank.csv`, rewritten on every change), round-up to whole keys, material returned by `GET /keys/{key_id}`.
