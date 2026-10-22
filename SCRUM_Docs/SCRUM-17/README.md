@@ -6,7 +6,7 @@ Ticket: SCRUM-17
 Plain Gmail send/receive with inbox fetch. No encryption or Key Manager yet.
 
 ## Contents
-- `../../src/email/gmail_adapter.py` - `EmailProvider` interface, `GmailAdapter` (OAuth, send, inbox fetch, attachments)
+- `../../src/email_service/gmail_adapter.py` - `EmailProvider` interface, `GmailAdapter` (OAuth, send, inbox fetch, attachments)
 - `../../src/app.py` - Streamlit UI (Inbox + Compose, Level 1 only)
 - `class_diagram_v1.md` - Class diagram v1
 
@@ -17,7 +17,7 @@ Plain Gmail send/receive with inbox fetch. No encryption or Key Manager yet.
    - Add the Gmail account being used as a test user on the OAuth consent screen.
 
 ## Run
-`streamlit run app.py` (a browser window opens for Google sign-in on first run; `token.json` is created locally).
+`streamlit run src/app.py` (a browser window opens for Google sign-in on first run; `token.json` is created locally).
 
 ## Limits
 Level 1 only. AES (Level 2), OTP (Level 3) and the Key Manager come in later tickets.
