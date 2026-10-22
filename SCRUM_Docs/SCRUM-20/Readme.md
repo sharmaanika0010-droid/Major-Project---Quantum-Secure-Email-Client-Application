@@ -11,7 +11,7 @@ Task: `/get_key` returns an unused key and marks it consumed.
 ## Run
 ```
 pip install flask
-python km_simulator.py
+python src/km_simulator/km_simulator.py
 ```
 
 ## Endpoint
