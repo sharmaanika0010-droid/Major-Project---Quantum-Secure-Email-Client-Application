@@ -1,6 +1,7 @@
 /.idea
 /.venv
 .env
-/__pycache
+/__pycache__
 .ipynb_checkpoints
 *.iml
+*.pyc
