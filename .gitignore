@@ -4,5 +4,13 @@
 /__pycache__
 .ipynb_checkpoints
 *.iml
+
 *.pyc
 src/km_simulator/keybank.csv
+=======
+
+__pycache__/
+
+src/email/*.backup
+tests/*.backup
+
