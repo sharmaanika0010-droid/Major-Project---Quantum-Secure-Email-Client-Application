@@ -23,7 +23,7 @@ python -m pip install -r requirements.txt
 
 1. Start the Key Manager simulator (keeps running, port 5000):
    ```cmd
-   python SCRUM_Works\SCRUM-14\km_simulator.py
+   python src\km_simulator\km_simulator.py
    ```
 2. Start QuMail in a second window:
    ```cmd
@@ -49,8 +49,12 @@ src/qumail/
   email/      IMAP and SMTP clients
 tests/        unit tests (fake KM) and integration tests (real KM simulator)
 docs/         diagrams, test plan, coverage, reports, demo screenshots
-SCRUM_Works/SCRUM-14/km_simulator.py   Flask Key Manager simulator (100 × 1 KB keys)
-.github/workflows/ci.yml               lint + tests on every push / PR
+src/km_simulator/km_simulator.py   Flask Key Manager simulator (100 × 1 KB keys)
+src/crypto, src/email_service, src/app.py
+                                   Streamlit prototype of Level 1/2 (crypto & email team) — standalone demo,
+                                   run with `streamlit run src/app.py`; the desktop client above is the main product
+SCRUM_Docs/, SVVV_Documentation/   UML diagrams, SRS/synopsis templates, per-ticket notes
+.github/workflows/ci.yml           lint + tests on every push / PR
 ```
 
 ## Development
@@ -65,6 +69,6 @@ Workflow: Jira ticket → `feature/SCRUM-<id>-<name>` branch → pull request to
 
 ## Notes and limitations
 
-- The KM simulator holds 100 keys of 1 KB; delete `SCRUM_Works/SCRUM-14/keybank.csv` and restart to reset it (previously sent encrypted mails can then no longer be opened).
+- The KM simulator holds 100 keys of 1 KB; delete `src/km_simulator/keybank.csv` and restart to reset it (previously sent encrypted mails can then no longer be opened).
 - Antivirus mail shields (e.g. Avast) rewrite mails and can break large uploads — disable them while testing.
 - Keys are reserved when a mail is prepared and burned if sending fails; automatic consumption after decryption is still open.

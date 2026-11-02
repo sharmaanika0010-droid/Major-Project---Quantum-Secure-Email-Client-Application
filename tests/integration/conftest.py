@@ -16,7 +16,9 @@ import requests
 from qumail.km.client import KMClient
 
 REPO = Path(__file__).resolve().parents[2]
-SIMULATOR = REPO / "SCRUM_Works" / "SCRUM-14" / "km_simulator.py"
+_CANDIDATES = [REPO / "src" / "km_simulator" / "km_simulator.py",
+               REPO / "SCRUM_Works" / "SCRUM-14" / "km_simulator.py"]
+SIMULATOR = next((p for p in _CANDIDATES if p.exists()), _CANDIDATES[0])
 
 # tiny bootstrap: force Flask to bind the port we chose, then run the simulator as __main__
 _BOOT = """
