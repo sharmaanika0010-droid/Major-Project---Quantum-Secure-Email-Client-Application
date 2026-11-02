@@ -1,7 +1,14 @@
+# QuMail desktop client (src/qumail)
 pycryptodome
-flask
 requests
 python-dotenv
+customtkinter
+# Key Manager simulator
+flask
+# Streamlit prototype (src/app.py, Level 1/2 demo by crypto team)
+streamlit
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+# tests
 pytest
-customtkinter
-customtkinter

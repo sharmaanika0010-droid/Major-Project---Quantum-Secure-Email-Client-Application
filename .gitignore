@@ -7,13 +7,14 @@ venv/
 *.egg-info/
 build/
 dist/
-.pytest_cache/
-.coverage
-htmlcov/
+*.iml
+.ipynb_checkpoints
 
 # Secrets / local config
 .env
 *.local
+credentials.json
+token.json
 
 # IDE / OS
 .vscode/
@@ -23,8 +24,10 @@ Thumbs.db
 
 # PyInstaller
 *.spec
+
 # KM simulator state (contains key material, changes on every send)
 SCRUM_Works/SCRUM-14/keybank.csv
+src/km_simulator/keybank.csv
 
 # test / coverage output
 .coverage
@@ -32,3 +35,5 @@ coverage.xml
 htmlcov/
 .pytest_cache/
 .ruff_cache/
+src/email_service/*.backup
+tests/*.backup
