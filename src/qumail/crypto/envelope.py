@@ -20,7 +20,7 @@ LEVELS: Dict[int, str] = {
     1: "Level 1 — Plain text (no encryption)",
     2: "Level 2 — Quantum-aided AES-256-GCM",
     3: "Level 3 — One-Time Pad",
-    4: "Level 4 — Extra (PQC / hybrid)",
+    4: "Level 4 — Double layer (AES-GCM + ChaCha20)",
 }
 
 

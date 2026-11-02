@@ -29,6 +29,9 @@ def key_bytes_for(level: int, text: str, files: List[str], hybrid: bool = False)
     from qumail.crypto import level2
     if level == 2:
         return level2.KEY_BYTES_NEEDED
+    if level == 4:
+        from qumail.crypto import level4
+        return level4.KEY_BYTES_NEEDED
     from qumail.crypto import level3
     if hybrid:
         return level3.key_bytes_needed(len(text.encode()), []) + (level2.KEY_BYTES_NEEDED if files else 0)
@@ -72,6 +75,13 @@ def prepare(level: int, text: str, files: List[str], km: KMClient, hybrid: bool 
         prepared = envelope.encrypt(2, text, key_material=key.material, key_id=key.key_id)
         aes = level2.derive_key(key.material)
         return prepared, [(n + ".qenc", level2.encrypt_bytes(d, aes)) for n, d in atts]
+
+    if level == 4:
+        from qumail.crypto import level4
+        key = km.request_key(level4.KEY_BYTES_NEEDED)
+        prepared = envelope.encrypt(4, text, key_material=key.material, key_id=key.key_id)
+        keys = level4.derive_keys(key.material)
+        return prepared, [(n + ".qenc", level4.encrypt_bytes(d, keys)) for n, d in atts]
 
     if level == 3:
         from qumail.crypto import level3
@@ -144,6 +154,16 @@ def open_message(msg, km: KMClient) -> str | None:
                 att.filename = att.filename[:-5]
                 att.data = by_name[att.filename]
                 att.content_type = mimetypes.guess_type(att.filename)[0] or "application/octet-stream"
+    elif msg.level == 4:
+        from qumail.crypto import level4
+        msg.body = envelope.decrypt(4, msg.body, key_material=key.material)
+        keys = level4.derive_keys(key.material)
+        for att in msg.attachments:
+            if att.filename.endswith(".qenc"):
+                att.data = level4.decrypt_bytes(att.data, keys)
+                att.filename = att.filename[:-5]
+                att.content_type = mimetypes.guess_type(att.filename)[0] or "application/octet-stream"
+        return f"🔓 Decrypted with quantum key {msg.key_id} (Level 4, AES-256-GCM + ChaCha20-Poly1305 double layer)"
     else:
         raise QuMailCryptoError(f"Level {msg.level} not available")
     return f"🔓 Decrypted with quantum key {msg.key_id} (Level {msg.level}, {len(key.material):,} key bytes)"

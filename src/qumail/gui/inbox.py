@@ -21,7 +21,7 @@ from qumail.gui.compose import ComposeWindow
 from qumail.km.client import KMClient, KMError
 
 LEVEL_COLORS = {1: ("gray70", "gray40"), 2: "#2e86de", 3: "#8e44ad", 4: "#c0392b"}
-LEVEL_NAMES = {1: "Plain", 2: "L2 · Quantum AES", 3: "L3 · One-Time Pad", 4: "L4 · Extra"}
+LEVEL_NAMES = {1: "Plain", 2: "L2 · Quantum AES", 3: "L3 · One-Time Pad", 4: "L4 · Double layer"}
 PREVIEW_TEXT_TYPES = ("text/plain", "text/csv", "text/markdown", "application/json")
 PREVIEW_IMAGE_TYPES = ("image/png", "image/jpeg", "image/gif", "image/bmp", "image/webp")
 
