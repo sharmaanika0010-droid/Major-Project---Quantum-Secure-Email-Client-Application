@@ -7,12 +7,11 @@ so Levels 2/3/4 appear automatically once their modules register.
 from __future__ import annotations
 
 import threading
-from pathlib import Path
 from tkinter import filedialog
 
 import customtkinter as ctk
 
-from qumail.crypto import envelope, pipeline
+from qumail.crypto import envelope, limits, pipeline
 from qumail.email.smtp_client import SMTPClient, SMTPError
 from qumail.km.client import KMClient, KMError, KMUnreachable, NoKeysAvailable
 
@@ -43,11 +42,18 @@ class ComposeWindow(ctk.CTkToplevel):
         ctk.CTkLabel(row, text="Security level").pack(side="left")
         levels = envelope.available_levels()
         self._level_by_label = {v: k for k, v in levels.items()}
-        self.level = ctk.CTkOptionMenu(row, values=list(levels.values()), width=320)
+        self.level = ctk.CTkOptionMenu(row, values=list(levels.values()), width=320, command=self._level_changed)
         self.level.pack(side="left", padx=10)
         self.km_lbl = ctk.CTkLabel(row, text="🔑 checking KM…", text_color="gray", font=("Segoe UI", 11))
         self.km_lbl.pack(side="left", padx=4)
         self.after(50, self._refresh_km)
+
+        # Day 15: extra encryption option for Level 3 — OTP body + AES attachments
+        self.hybrid = ctk.BooleanVar(value=False)
+        self.hybrid_chk = ctk.CTkCheckBox(self, variable=self.hybrid, font=("Segoe UI", 11),
+                                          text="Hybrid: One-Time Pad for the text, AES-256-GCM (Level 2) for attachments "
+                                               "— needs only ~1 KB of key per file")
+        # packed/unpacked by _level_changed
 
         ctk.CTkLabel(self, text="Message", anchor="w").pack(fill="x", **pad)
         self.body = ctk.CTkTextbox(self, wrap="word", font=("Segoe UI", 12))
@@ -56,7 +62,9 @@ class ComposeWindow(ctk.CTkToplevel):
         arow = ctk.CTkFrame(self, fg_color="transparent")
         arow.pack(fill="x", padx=16)
         ctk.CTkButton(arow, text="📎 Attach", width=90, fg_color="gray50", command=self._attach).pack(side="left")
-        self.attach_lbl = ctk.CTkLabel(arow, text="No attachments", text_color="gray", anchor="w")
+        self.clear_btn = ctk.CTkButton(arow, text="✕ Clear", width=70, fg_color="gray30", command=self._clear_attachments)
+        self.attach_lbl = ctk.CTkLabel(arow, text="No attachments", text_color="gray", anchor="w",
+                                       wraplength=380, justify="left", font=("Segoe UI", 11))
         self.attach_lbl.pack(side="left", padx=10, fill="x", expand=True)
 
         brow = ctk.CTkFrame(self, fg_color="transparent")
@@ -105,17 +113,48 @@ class ComposeWindow(ctk.CTkToplevel):
         self.fallback_btn.pack_forget()
         self._send()
 
+    def _level_changed(self, label: str = None):
+        lvl = self._level_by_label.get(label or self.level.get(), 1)
+        if lvl == 3:
+            self.hybrid_chk.pack(fill="x", padx=16, pady=(0, 4), before=self.body)
+        else:
+            self.hybrid_chk.pack_forget()
+
+    # -- attachments (Day 15: multiple files, size validation) -------------
     def _attach(self):
         paths = filedialog.askopenfilenames(title="Attach files")
-        if paths:
-            self.files.extend(paths)
-            self.attach_lbl.configure(text=", ".join(Path(p).name for p in self.files)[:80])
+        if not paths:
+            return
+        candidate = list(dict.fromkeys(self.files + list(paths)))   # keep order, drop duplicates
+        problem = limits.validate(candidate)
+        if problem:
+            self.status.configure(text=problem, text_color="#e74c3c")
+            return
+        self.files = candidate
+        self.status.configure(text="")
+        self._show_attachments()
+
+    def _clear_attachments(self):
+        self.files = []
+        self._show_attachments()
+
+    def _show_attachments(self):
+        self.attach_lbl.configure(text=limits.summary(self.files), text_color="gray" if not self.files else ("gray85"))
+        if self.files:
+            self.clear_btn.pack(side="left", padx=(6, 0), before=self.attach_lbl)
+        else:
+            self.clear_btn.pack_forget()
+        total = sum(n for _, n in limits.sizes(self.files))
+        if total > limits.LEVEL3_WARN_BYTES and self._level_by_label.get(self.level.get()) == 3 and not self.hybrid.get():
+            self.status.configure(text=f"{limits.human(total)} at Level 3 needs that much quantum key — "
+                                       "tick 'Hybrid' or use Level 2.", text_color="#f39c12")
 
     def _send(self):
         to = self.to.get().strip()
         subject = self.subject.get().strip() or "(no subject)"
         text = self.body.get("1.0", "end").strip()
         level = self._level_by_label[self.level.get()]
+        hybrid = level == 3 and bool(self.hybrid.get())
         if not to or "@" not in to:
             self.status.configure(text="Enter a valid recipient", text_color="#e74c3c")
             return
@@ -127,13 +166,13 @@ class ComposeWindow(ctk.CTkToplevel):
         def work():
             prepared = None
             try:
-                problem = pipeline.check_capacity(level, text, self.files, self.km)
+                problem = pipeline.check_capacity(level, text, self.files, self.km, hybrid)
                 if problem:
                     self.after(0, self._fail, problem, level >= 2)
                     return
                 if level >= 2:
                     self.after(0, lambda: self.status.configure(text="Requesting quantum key from KM…"))
-                prepared, files = pipeline.prepare(level, text, self.files, self.km)
+                prepared, files = pipeline.prepare(level, text, self.files, self.km, hybrid)
                 self.after(0, lambda: self.status.configure(text="Sending…"))
                 msg_id = self.smtp.send(to, subject, prepared.body, prepared.headers(), files)
             except (NoKeysAvailable, KMUnreachable) as exc:

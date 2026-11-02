@@ -57,7 +57,7 @@ class SMTPClient:
             msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=name)
 
         try:
-            with smtplib.SMTP_SSL(self.host, 465, context=ssl.create_default_context(), timeout=30) as s:
+            with smtplib.SMTP_SSL(self.host, 465, context=ssl.create_default_context(), timeout=180) as s:
                 s.login(self.address, self._password)
                 s.send_message(msg)
         except smtplib.SMTPAuthenticationError as exc:
