@@ -17,7 +17,9 @@ import customtkinter as ctk
 from qumail.crypto import envelope, pipeline
 from qumail.email.imap_client import Attachment, EmailMessage, IMAPClient
 from qumail.email.smtp_client import SMTPClient
+from qumail.contacts import get_book
 from qumail.gui.compose import ComposeWindow
+from qumail.gui.contacts import ContactsWindow
 from qumail.km.client import KMClient, KMError
 
 LEVEL_COLORS = {1: ("gray70", "gray40"), 2: "#2e86de", 3: "#8e44ad", 4: "#c0392b"}
@@ -42,6 +44,8 @@ class InboxFrame(ctk.CTkFrame):
         ctk.CTkButton(top, text="Refresh", width=80, command=self.refresh).pack(side="right", padx=6)
         ctk.CTkButton(top, text="✉ Compose", width=100, fg_color="#2ecc71", hover_color="#27ae60",
                       text_color="black", command=self.compose).pack(side="right", padx=6)
+        ctk.CTkButton(top, text="📒 Contacts", width=100, fg_color="gray50",
+                      command=lambda: ContactsWindow(self, get_book())).pack(side="right", padx=6)
         self.km_lbl = ctk.CTkLabel(top, text="🔑 KM…", text_color="gray", font=("Segoe UI", 12))
         self.km_lbl.pack(side="right", padx=10)
         self.status = ctk.CTkLabel(self, text="Loading…", text_color="gray")
