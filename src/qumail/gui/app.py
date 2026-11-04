@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 import customtkinter as ctk
-from dotenv import load_dotenv
 
+from qumail.config import get_settings
 from qumail.crypto import envelope
 from qumail.gui.inbox import InboxFrame
 from qumail.gui.login import LoginFrame
 
 envelope.load_levels()  # registers Level 2 (+3/4 when present)
-load_dotenv()  # optional .env with QUMAIL_EMAIL / QUMAIL_KM_URL (never commit .env)
+get_settings()          # reads .env once (SCRUM-56); password is never read from config
 
 
 class QuMailApp(ctk.CTk):

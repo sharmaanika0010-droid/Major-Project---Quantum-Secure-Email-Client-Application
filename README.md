@@ -8,7 +8,7 @@ Desktop email client that works with ordinary Gmail / Yahoo accounts and protect
 | 2 | AES-256-GCM, key derived from a quantum key (HKDF) | one 1 KB key per mail |
 | 3 | One-Time Pad + HMAC-SHA256 | key ≥ text + attachments |
 | 3 Hybrid | OTP for the text, AES-256-GCM for attachments | ~1 KB + text length |
-| 4 | Post-quantum / hybrid scheme | planned |
+| 4 | Double layer: AES-256-GCM then ChaCha20-Poly1305 (two HKDF keys from one quantum key) | one 1 KB key per mail |
 
 Team: Anika Sharma (lead, architecture, DevOps) · Amit Chouhan (email, GUI) · Umang Goswami (crypto, KM, testing)
 Tracker: Jira project `SCRUM` · Branches: `main` (releases), `develop` (integration), `feature/*`
@@ -31,6 +31,20 @@ python -m pip install -r requirements.txt
    python -m qumail.gui.app
    ```
 3. Log in with your Gmail address and an **app password** (Google account → Security → 2-Step Verification → App passwords). Yahoo: generate an app password under Account Security.
+
+## Configuration (.env)
+
+No value is hard-coded. Copy `.env.example` to `.env` (git-ignored) and change what you need — every variable is optional:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `QUMAIL_EMAIL` / `QUMAIL_PROVIDER` | – / `Gmail` | pre-filled on the login screen |
+| `QUMAIL_KM_URL` / `QUMAIL_KM_TIMEOUT` | `http://localhost:5000` / `5` | Key Manager address and timeout (s) |
+| `QUMAIL_SMTP_PORT` / `QUMAIL_SMTP_TIMEOUT` / `QUMAIL_IMAP_TIMEOUT` | `465` / `30` / `30` | mail transport |
+| `QUMAIL_MAX_FILES` / `QUMAIL_MAX_FILE_MB` / `QUMAIL_MAX_TOTAL_MB` | `10` / `15` / `18` | attachment limits |
+| `QUMAIL_LEVEL3_WARN_KB` | `50` | warn before OTP on big files |
+
+The mail password is **never** stored in `.env` or anywhere on disk — it is typed at login and kept in memory only. `tests/test_config.py` fails the build if `.env`, `credentials.json`, `token.json` or `keybank.csv` is ever committed, or if a KM URL / app password appears in the code.
 
 ## Using it
 
