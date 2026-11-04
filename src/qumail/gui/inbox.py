@@ -14,10 +14,10 @@ from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 
+from qumail.contacts import get_book
 from qumail.crypto import envelope, pipeline
 from qumail.email.imap_client import Attachment, EmailMessage, IMAPClient
 from qumail.email.smtp_client import SMTPClient
-from qumail.contacts import get_book
 from qumail.gui.compose import ComposeWindow
 from qumail.gui.contacts import ContactsWindow
 from qumail.km.client import KMClient, KMError

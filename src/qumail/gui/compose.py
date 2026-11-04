@@ -13,8 +13,8 @@ import customtkinter as ctk
 
 from qumail.contacts import get_book
 from qumail.crypto import envelope, limits, pipeline
-from qumail.gui.contacts import ContactsWindow
 from qumail.email.smtp_client import SMTPClient, SMTPError
+from qumail.gui.contacts import ContactsWindow
 from qumail.km.client import KMClient, KMError, KMUnreachable, NoKeysAvailable
 
 
