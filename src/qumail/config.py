@@ -73,6 +73,8 @@ class Settings:
     level3_warn_kb: int = 50
     # address book (SCRUM-57) — JSON outside the repo
     contacts_file: str = "~/.qumail/contacts.json"
+    # key-usage audit trail (SCRUM-58) — JSON lines, outside the repo
+    audit_file: str = "~/.qumail/audit.log"
     # where the values came from (for the About / debug output)
     env_file: str = ""
 
@@ -103,6 +105,7 @@ class Settings:
             max_total_mb=_int("QUMAIL_MAX_TOTAL_MB", 18, 1, 25),
             level3_warn_kb=_int("QUMAIL_LEVEL3_WARN_KB", 50, 1, 1024),
             contacts_file=os.getenv("QUMAIL_CONTACTS_FILE", "~/.qumail/contacts.json").strip() or "~/.qumail/contacts.json",
+            audit_file=os.getenv("QUMAIL_AUDIT_FILE", "~/.qumail/audit.log").strip() or "~/.qumail/audit.log",
             env_file=str(env_path) if env_path else "",
         )
 

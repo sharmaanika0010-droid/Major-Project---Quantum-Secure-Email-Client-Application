@@ -14,10 +14,13 @@ from tkinter import filedialog, messagebox
 
 import customtkinter as ctk
 
+from qumail import audit
+from qumail.audit import get_audit
 from qumail.contacts import get_book
 from qumail.crypto import envelope, pipeline
 from qumail.email.imap_client import Attachment, EmailMessage, IMAPClient
 from qumail.email.smtp_client import SMTPClient
+from qumail.gui.audit_view import AuditWindow
 from qumail.gui.compose import ComposeWindow
 from qumail.gui.contacts import ContactsWindow
 from qumail.km.client import KMClient, KMError
@@ -46,6 +49,8 @@ class InboxFrame(ctk.CTkFrame):
                       text_color="black", command=self.compose).pack(side="right", padx=6)
         ctk.CTkButton(top, text="📒 Contacts", width=100, fg_color="gray50",
                       command=lambda: ContactsWindow(self, get_book())).pack(side="right", padx=6)
+        ctk.CTkButton(top, text="📜 Audit", width=80, fg_color="gray50",
+                      command=lambda: AuditWindow(self, get_audit())).pack(side="right", padx=6)
         self.km_lbl = ctk.CTkLabel(top, text="🔑 KM…", text_color="gray", font=("Segoe UI", 12))
         self.km_lbl.pack(side="right", padx=10)
         self.status = ctk.CTkLabel(self, text="Loading…", text_color="gray")
@@ -157,6 +162,7 @@ class InboxFrame(ctk.CTkFrame):
                     note = pipeline.open_message(msg, self.km)
                 except (KMError, envelope.QuMailCryptoError) as exc:
                     note = f"🔒 Cannot decrypt: {exc}"
+                    audit.log("decrypt_failed", level=msg.level, key_id=msg.key_id, error=str(exc)[:120])
                     msg.level = -msg.level  # mark as failed for the renderer
             self.after(0, self._render_message, msg, note)
 

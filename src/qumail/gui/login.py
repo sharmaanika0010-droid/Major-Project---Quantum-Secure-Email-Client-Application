@@ -6,6 +6,7 @@ from typing import Callable
 
 import customtkinter as ctk
 
+from qumail import audit
 from qumail.config import get_settings
 from qumail.email.imap_client import PROVIDERS, IMAPClient, IMAPError
 from qumail.email.smtp_client import SMTPClient
@@ -123,5 +124,6 @@ class LoginFrame(ctk.CTkFrame):
         self.error.configure(text=message)
 
     def _ok(self, client: IMAPClient, smtp: SMTPClient, km: KMClient):
+        audit.log("login", address=client.address, provider=self.provider.get(), km_url=km.base_url)
         self.sign_in.configure(state="normal", text="Sign in")
         self.on_success(client, smtp, km)
