@@ -8,6 +8,26 @@ on:
     branches: [main, develop]
 
 jobs:
+  static-analysis:
+    name: Static analysis (ruff + bandit + pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Lint (ruff)
+        run: ruff check src tests --output-format=github
+      - name: Security scan (bandit)
+        run: bandit -c bandit.yaml -r src -f txt
+      - name: Dependency vulnerabilities (pip-audit)
+        run: pip-audit -r requirements.txt --progress-spinner off
+
   test:
     name: Unit tests (Python ${{ matrix.python }})
     runs-on: ubuntu-latest

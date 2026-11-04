@@ -54,7 +54,7 @@ class EmailProvider(ABC):
 
 class GmailAdapter(EmailProvider):
     def __init__(self, credentials_file: str = "credentials.json",
-                 token_file: str = "token.json"):
+                 token_file: str = "token.json"):  # a file name, not a secret # nosec B107
         self.credentials_file = credentials_file
         self.token_file = token_file
         self.service = None
