@@ -23,6 +23,17 @@ from qumail.email.smtp_client import SMTPClient
 from qumail.gui.audit_view import AuditWindow
 from qumail.gui.compose import ComposeWindow
 from qumail.gui.contacts import ContactsWindow
+from qumail.gui.ui import (
+    BTN_PRIMARY,
+    BTN_SECONDARY,
+    FONT,
+    FONT_SMALL,
+    FONT_TITLE,
+    bind_dialog_keys,
+    center_on_parent,
+    friendly_date,
+    friendly_sender,
+)
 from qumail.km.client import KMClient, KMError
 
 LEVEL_COLORS = {1: ("gray70", "gray40"), 2: "#2e86de", 3: "#8e44ad", 4: "#c0392b"}
@@ -42,16 +53,17 @@ class InboxFrame(ctk.CTkFrame):
         # -- top bar ----------------------------------------------------
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", padx=16, pady=(12, 6))
-        ctk.CTkLabel(top, text=f"Inbox — {client.address}", font=("Segoe UI", 16, "bold")).pack(side="left")
-        ctk.CTkButton(top, text="Logout", width=80, command=on_logout).pack(side="right")
-        ctk.CTkButton(top, text="Refresh", width=80, command=self.refresh).pack(side="right", padx=6)
-        ctk.CTkButton(top, text="✉ Compose", width=100, fg_color="#2ecc71", hover_color="#27ae60",
-                      text_color="black", command=self.compose).pack(side="right", padx=6)
-        ctk.CTkButton(top, text="📒 Contacts", width=100, fg_color="gray50",
-                      command=lambda: ContactsWindow(self, get_book())).pack(side="right", padx=6)
-        ctk.CTkButton(top, text="📜 Audit", width=80, fg_color="gray50",
-                      command=lambda: AuditWindow(self, get_audit())).pack(side="right", padx=6)
-        self.km_lbl = ctk.CTkLabel(top, text="🔑 KM…", text_color="gray", font=("Segoe UI", 12))
+        ctk.CTkLabel(top, text=f"Inbox — {client.address}", font=FONT_TITLE).pack(side="left")
+        # SCRUM-60: one primary action, secondary actions grouped with equal widths; tooltips via shortcut hints
+        ctk.CTkButton(top, text="Logout", width=90, **BTN_SECONDARY, command=on_logout).pack(side="right")
+        ctk.CTkButton(top, text="Refresh  F5", width=100, command=self.refresh).pack(side="right", padx=(6, 10))
+        ctk.CTkButton(top, text="📜 Audit", width=90, **BTN_SECONDARY,
+                      command=lambda: AuditWindow(self, get_audit())).pack(side="right", padx=3)
+        ctk.CTkButton(top, text="📒 Contacts", width=100, **BTN_SECONDARY,
+                      command=lambda: ContactsWindow(self, get_book())).pack(side="right", padx=3)
+        ctk.CTkButton(top, text="✉ Compose  Ctrl+N", width=150, **BTN_PRIMARY,
+                      command=self.compose).pack(side="right", padx=(10, 3))
+        self.km_lbl = ctk.CTkLabel(top, text="🔑 KM…", text_color="gray", font=FONT)
         self.km_lbl.pack(side="right", padx=10)
         self.status = ctk.CTkLabel(self, text="Loading…", text_color="gray")
         self.status.pack(anchor="w", padx=16)
@@ -112,8 +124,8 @@ class InboxFrame(ctk.CTkFrame):
                 self.list, anchor="w", height=52, corner_radius=6,
                 fg_color=("gray90", "gray20"), hover_color=("gray80", "gray30"),
                 text_color=("black", "white"),
-                text=f"{m.sender[:34]}\n{m.subject[:46]}",
-                font=("Segoe UI", 12),
+                text=f"{friendly_sender(m.sender)[:30]}\n{m.subject[:44] or '(no subject)'}",
+                font=FONT,
                 command=lambda uid=m.uid: self.open_message(uid),
             )
             row.pack(fill="x", pady=2)
@@ -123,7 +135,7 @@ class InboxFrame(ctk.CTkFrame):
             if badge:
                 ctk.CTkLabel(row, text=badge, width=44, height=20, corner_radius=10, font=("Segoe UI", 10, "bold"),
                              fg_color=LEVEL_COLORS.get(m.level, "gray"), text_color="white").place(relx=1.0, x=-8, y=6, anchor="ne")
-            ctk.CTkLabel(row, text=m.date[5:16], font=("Segoe UI", 10), text_color="gray").place(relx=1.0, x=-8, y=30, anchor="ne")
+            ctk.CTkLabel(row, text=friendly_date(m.date, with_time=False), font=FONT_SMALL, text_color="gray").place(relx=1.0, x=-8, y=30, anchor="ne")
 
     # ------------------------------------------------------------------
     # reader pane
@@ -173,7 +185,7 @@ class InboxFrame(ctk.CTkFrame):
         failed = msg.level < 0
         level = abs(msg.level)
         self.r_subject.configure(text=msg.subject)
-        self.r_meta.configure(text=f"From: {msg.sender}\nTo: {msg.to}\nDate: {msg.date}")
+        self.r_meta.configure(text=f"From: {msg.sender}\nTo: {msg.to}\nDate: {friendly_date(msg.date)}")
         self.r_level.configure(text=LEVEL_NAMES.get(level, f"L{level}"), fg_color=LEVEL_COLORS.get(level, "gray"))
 
         if failed:
@@ -223,7 +235,8 @@ class InboxFrame(ctk.CTkFrame):
         ctype = att.content_type.lower()
         win = ctk.CTkToplevel(self)
         win.title(f"Preview — {att.filename}")
-        win.geometry("640x520")
+        center_on_parent(win, self.winfo_toplevel(), 640, 520)
+        bind_dialog_keys(win, win.destroy)
         win.after(100, win.lift)
 
         if ctype in PREVIEW_IMAGE_TYPES:

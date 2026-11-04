@@ -7,17 +7,19 @@ from qumail.config import get_settings
 from qumail.crypto import envelope
 from qumail.gui.inbox import InboxFrame
 from qumail.gui.login import LoginFrame
+from qumail.gui.ui import enable_windows_dpi
 
 envelope.load_levels()  # registers Level 2 (+3/4 when present)
 get_settings()          # reads .env once (SCRUM-56); password is never read from config
+enable_windows_dpi()    # SCRUM-60: crisp text on scaled Windows displays
 
 
 class QuMailApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("QuMail — Quantum Secure Email")
-        self.geometry("760x620")
-        self.minsize(560, 560)
+        self.geometry("1000x680")
+        self.minsize(760, 600)
         self.current = None
         self.client = None
         self.smtp = None
@@ -39,7 +41,12 @@ class QuMailApp(ctk.CTk):
         self.client = client
         self.smtp = smtp
         self.km = km
-        self._swap(InboxFrame(self, client, smtp, km, on_logout=self.show_login))
+        inbox = InboxFrame(self, client, smtp, km, on_logout=self.show_login)
+        self._swap(inbox)
+        # SCRUM-60 keyboard shortcuts (Windows conventions)
+        self.bind("<Control-n>", lambda _e: inbox.compose())
+        self.bind("<F5>", lambda _e: inbox.refresh())
+        self.bind("<Control-l>", lambda _e: self.show_login())
 
 
 if __name__ == "__main__":

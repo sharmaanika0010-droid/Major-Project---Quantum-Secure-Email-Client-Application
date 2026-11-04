@@ -75,6 +75,9 @@ class LoginFrame(ctk.CTkFrame):
         self.error.pack(pady=(8, 0))
 
         self.password.bind("<Return>", lambda _e: self._login())
+        self.email.bind("<Return>", lambda _e: self.password.focus_set())
+        # SCRUM-60: focus the first empty field
+        self.after(200, lambda: (self.password if cfg.email else self.email).focus_set())
 
     # -- helpers ----------------------------------------------------------
     def _test_km(self):

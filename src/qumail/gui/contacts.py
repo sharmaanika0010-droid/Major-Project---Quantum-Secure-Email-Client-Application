@@ -6,6 +6,7 @@ from typing import Callable, Optional
 import customtkinter as ctk
 
 from qumail.contacts import Contact, ContactBook, ContactError
+from qumail.gui.ui import bind_dialog_keys, center_on_parent
 
 LEVEL_LABELS = {1: "1 — Plain", 2: "2 — AES-256-GCM", 3: "3 — One-Time Pad", 4: "4 — Double layer"}
 
@@ -19,8 +20,9 @@ class ContactsWindow(ctk.CTkToplevel):
         self.on_pick = on_pick
         self.selected: Optional[Contact] = None
         self.title("QuMail — Contacts")
-        self.geometry("720x460")
+        center_on_parent(self, master.winfo_toplevel(), 760, 480)
         self.minsize(620, 400)
+        bind_dialog_keys(self, self.destroy, on_primary=self._save)
         self.after(100, self.lift)
 
         self.grid_columnconfigure(0, weight=1, minsize=280)

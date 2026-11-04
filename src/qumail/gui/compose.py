@@ -17,6 +17,7 @@ from qumail.contacts import get_book
 from qumail.crypto import envelope, limits, pipeline
 from qumail.email.smtp_client import SMTPClient, SMTPError
 from qumail.gui.contacts import ContactsWindow
+from qumail.gui.ui import BTN_PRIMARY, BTN_SECONDARY, bind_dialog_keys, center_on_parent
 from qumail.km.client import KMClient, KMError, KMUnreachable, NoKeysAvailable
 
 
@@ -28,9 +29,11 @@ class ComposeWindow(ctk.CTkToplevel):
         self.on_sent = on_sent
         self.files: list[str] = []
         self.title("QuMail — New message")
-        self.geometry("640x560")
-        self.minsize(520, 480)
+        center_on_parent(self, master.winfo_toplevel(), 680, 600)
+        self.minsize(560, 500)
+        bind_dialog_keys(self, self.destroy, on_primary=self._send)      # Esc = cancel, Ctrl+Enter = send
         self.after(100, self.lift)
+        self.after(150, lambda: self.to.focus_set())
 
         pad = {"padx": 16, "pady": (8, 0)}
         ctk.CTkLabel(self, text="To", anchor="w").pack(fill="x", **pad)
@@ -83,8 +86,8 @@ class ComposeWindow(ctk.CTkToplevel):
         brow.pack(fill="x", padx=16, pady=12)
         self.status = ctk.CTkLabel(brow, text="", text_color="gray", anchor="w", wraplength=380, justify="left")
         self.status.pack(side="left", fill="x", expand=True)
-        ctk.CTkButton(brow, text="Cancel", width=80, fg_color="gray50", command=self.destroy).pack(side="right", padx=(6, 0))
-        self.send_btn = ctk.CTkButton(brow, text="Send", width=100, command=self._send)
+        ctk.CTkButton(brow, text="Cancel  Esc", width=100, **BTN_SECONDARY, command=self.destroy).pack(side="right", padx=(6, 0))
+        self.send_btn = ctk.CTkButton(brow, text="Send  Ctrl+Enter", width=140, **BTN_PRIMARY, command=self._send)
         self.send_btn.pack(side="right")
         self.fallback_btn = ctk.CTkButton(brow, text="Send as Level 1 instead", width=170, fg_color="#e67e22",
                                           hover_color="#d35400", command=self._fallback_level1)
