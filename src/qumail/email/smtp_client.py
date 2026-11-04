@@ -12,6 +12,7 @@ from email.utils import formatdate, make_msgid
 from pathlib import Path
 from typing import Dict, Iterable, Optional, Tuple, Union
 
+from qumail.config import get_settings
 from qumail.email.imap_client import PROVIDERS
 
 
@@ -20,12 +21,16 @@ class SMTPError(Exception):
 
 
 class SMTPClient:
-    def __init__(self, provider: str, address: str, app_password: str):
+    def __init__(self, provider: str, address: str, app_password: str,
+                 timeout: Optional[int] = None, port: Optional[int] = None):
         if provider not in PROVIDERS:
             raise SMTPError(f"Unknown provider: {provider}")
         self.host = PROVIDERS[provider][1]
         self.address = address
         self._password = app_password
+        cfg = get_settings()
+        self.timeout = timeout or cfg.smtp_timeout
+        self.port = port or cfg.smtp_port
 
     def send(
         self,
@@ -57,7 +62,7 @@ class SMTPClient:
             msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=name)
 
         try:
-            with smtplib.SMTP_SSL(self.host, 465, context=ssl.create_default_context(), timeout=180) as s:
+            with smtplib.SMTP_SSL(self.host, self.port, context=ssl.create_default_context(), timeout=self.timeout) as s:
                 s.login(self.address, self._password)
                 s.send_message(msg)
         except smtplib.SMTPAuthenticationError as exc:

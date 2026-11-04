@@ -9,10 +9,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable, List, Tuple
 
-MAX_FILES = 10
-MAX_FILE_BYTES = 15 * 1024 * 1024        # per attachment
-MAX_TOTAL_BYTES = 18 * 1024 * 1024       # all attachments together (≈ 25 MB after base64)
-LEVEL3_WARN_BYTES = 50 * 1024            # above this, OTP is impractical with a 100 KB key bank
+from qumail.config import get_settings
+
+_cfg = get_settings()                       # SCRUM-56: limits come from .env / defaults
+MAX_FILES = _cfg.max_files
+MAX_FILE_BYTES = _cfg.max_file_mb * 1024 * 1024        # per attachment
+MAX_TOTAL_BYTES = _cfg.max_total_mb * 1024 * 1024      # all attachments together (≈ 25 MB after base64)
+LEVEL3_WARN_BYTES = _cfg.level3_warn_kb * 1024         # above this, OTP is impractical with a 100 KB key bank
 
 
 def human(n: int) -> str:

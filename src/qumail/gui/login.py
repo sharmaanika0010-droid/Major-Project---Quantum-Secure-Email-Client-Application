@@ -1,12 +1,12 @@
 """Login screen (CustomTkinter) — matches docs/uml/wireframe_login_v1.png."""
 from __future__ import annotations
 
-import os
 import threading
 from typing import Callable
 
 import customtkinter as ctk
 
+from qumail.config import get_settings
 from qumail.email.imap_client import PROVIDERS, IMAPClient, IMAPError
 from qumail.email.smtp_client import SMTPClient
 from qumail.km.client import KMClient, KMError
@@ -21,6 +21,7 @@ class LoginFrame(ctk.CTkFrame):
     def __init__(self, master, on_success: Callable[[IMAPClient], None]):
         super().__init__(master, fg_color="transparent")
         self.on_success = on_success
+        cfg = get_settings()
 
         ctk.CTkLabel(self, text="Q", width=60, height=60, corner_radius=30,
                      fg_color=("gray85", "gray25"), font=("Segoe UI", 26, "bold")).pack(pady=(30, 10))
@@ -33,13 +34,14 @@ class LoginFrame(ctk.CTkFrame):
 
         ctk.CTkLabel(form, text="Email provider", anchor="w").pack(fill="x")
         self.provider = ctk.CTkOptionMenu(form, values=list(PROVIDERS.keys()), width=380)
+        self.provider.set(cfg.provider)
         self.provider.pack(fill="x", pady=(2, 12))
 
         ctk.CTkLabel(form, text="Email address", anchor="w").pack(fill="x")
         self.email = ctk.CTkEntry(form, placeholder_text="you@gmail.com", width=380)
         self.email.pack(fill="x", pady=(2, 12))
-        if os.getenv("QUMAIL_EMAIL"):
-            self.email.insert(0, os.getenv("QUMAIL_EMAIL"))
+        if cfg.email:
+            self.email.insert(0, cfg.email)
 
         ctk.CTkLabel(form, text="App password", anchor="w").pack(fill="x")
         row = ctk.CTkFrame(form, fg_color="transparent")
@@ -55,8 +57,8 @@ class LoginFrame(ctk.CTkFrame):
         ctk.CTkLabel(form, text="Key Manager URL", anchor="w").pack(fill="x")
         row2 = ctk.CTkFrame(form, fg_color="transparent")
         row2.pack(fill="x", pady=(2, 12))
-        self.km_url = ctk.CTkEntry(row2, placeholder_text="http://localhost:5000")
-        self.km_url.insert(0, os.getenv("QUMAIL_KM_URL", "http://localhost:5000"))
+        self.km_url = ctk.CTkEntry(row2, placeholder_text=cfg.km_url)
+        self.km_url.insert(0, cfg.km_url)
         self.km_url.pack(side="left", fill="x", expand=True)
         ctk.CTkButton(row2, text="Test", width=70, command=self._test_km).pack(side="left", padx=(6, 6))
         self.km_status = ctk.CTkLabel(row2, text="● KM not checked", text_color="gray")
@@ -80,7 +82,7 @@ class LoginFrame(ctk.CTkFrame):
 
         def work():
             try:
-                st = KMClient(url).status()
+                st = KMClient(url, timeout=get_settings().km_timeout).status()
                 txt, col = f"● KM OK — {st.get('available', '?')} keys available", "#2ecc71"
             except KMError as exc:
                 txt, col = f"● {exc}", "#e74c3c"
@@ -110,7 +112,9 @@ class LoginFrame(ctk.CTkFrame):
             except IMAPError as exc:
                 self.after(0, self._fail, str(exc))
                 return
-            self.after(0, self._ok, client, SMTPClient(prov, addr, pwd), KMClient(self.km_url.get().strip()))
+            cfg = get_settings()
+            self.after(0, self._ok, client, SMTPClient(prov, addr, pwd),
+                       KMClient(self.km_url.get().strip(), timeout=cfg.km_timeout))
 
         threading.Thread(target=work, daemon=True).start()  # keep UI responsive
 
