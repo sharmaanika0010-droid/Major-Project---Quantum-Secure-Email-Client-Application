@@ -11,8 +11,10 @@ from tkinter import filedialog
 
 import customtkinter as ctk
 
+from qumail.contacts import get_book
 from qumail.crypto import envelope, limits, pipeline
 from qumail.email.smtp_client import SMTPClient, SMTPError
+from qumail.gui.contacts import ContactsWindow
 from qumail.km.client import KMClient, KMError, KMUnreachable, NoKeysAvailable
 
 
@@ -30,8 +32,16 @@ class ComposeWindow(ctk.CTkToplevel):
 
         pad = {"padx": 16, "pady": (8, 0)}
         ctk.CTkLabel(self, text="To", anchor="w").pack(fill="x", **pad)
-        self.to = ctk.CTkEntry(self, placeholder_text="someone@example.com")
-        self.to.pack(fill="x", padx=16)
+        trow = ctk.CTkFrame(self, fg_color="transparent")
+        trow.pack(fill="x", padx=16)
+        self.to = ctk.CTkEntry(trow, placeholder_text="someone@example.com")
+        self.to.pack(side="left", fill="x", expand=True)
+        self.to.bind("<FocusOut>", lambda _e: self._apply_contact())
+        self.to.bind("<Return>", lambda _e: self._apply_contact())
+        ctk.CTkButton(trow, text="📒 Contacts", width=100, fg_color="gray50", command=self._pick_contact).pack(side="left", padx=(6, 0))
+        self.contact_lbl = ctk.CTkLabel(self, text="", text_color="gray", anchor="w", font=("Segoe UI", 11))
+        self.contact_lbl.pack(fill="x", padx=16)
+        self.book = get_book()
 
         ctk.CTkLabel(self, text="Subject", anchor="w").pack(fill="x", **pad)
         self.subject = ctk.CTkEntry(self)
@@ -77,6 +87,30 @@ class ComposeWindow(ctk.CTkToplevel):
         self.fallback_btn = ctk.CTkButton(brow, text="Send as Level 1 instead", width=170, fg_color="#e67e22",
                                           hover_color="#d35400", command=self._fallback_level1)
         # shown only in the no-keys error state
+
+    # -- address book (SCRUM-57) -------------------------------------------
+    def _pick_contact(self):
+        ContactsWindow(self, self.book, on_pick=self._use_contact)
+
+    def _use_contact(self, contact):
+        self.to.delete(0, "end")
+        self.to.insert(0, contact.email)
+        self._apply_contact()
+
+    def _apply_contact(self):
+        """Known recipient → pre-select their preferred level and show key-exchange info."""
+        c = self.book.get(self.to.get())
+        if not c:
+            self.contact_lbl.configure(text="")
+            return
+        label = next((lbl for lbl, lvl in self._level_by_label.items() if lvl == c.preferred_level), None)
+        if label and label in self.level.cget("values"):
+            self.level.set(label)
+            self._level_changed(label)
+        info = f"{c.display} · prefers Level {c.preferred_level}"
+        if c.km_peer_id:
+            info += f" · KM peer {c.km_peer_id}"
+        self.contact_lbl.configure(text=info)
 
     # -- KM key-bank state (Day 10) ----------------------------------------
     def _refresh_km(self):
@@ -196,6 +230,10 @@ class ComposeWindow(ctk.CTkToplevel):
 
     def _ok(self, msg_id: str, level: int):
         self.status.configure(text=f"Sent (Level {level})", text_color="#2ecc71")
+        try:
+            self.book.remember(self.to.get().strip(), level)    # auto-add recipient, remember level
+        except Exception:                                       # noqa: BLE001 — never block the send UI
+            pass
         if self.on_sent:
             self.on_sent(msg_id, level)
         self.after(900, self.destroy)

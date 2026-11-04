@@ -71,6 +71,8 @@ class Settings:
     max_file_mb: int = 15
     max_total_mb: int = 18
     level3_warn_kb: int = 50
+    # address book (SCRUM-57) — JSON outside the repo
+    contacts_file: str = "~/.qumail/contacts.json"
     # where the values came from (for the About / debug output)
     env_file: str = ""
 
@@ -100,6 +102,7 @@ class Settings:
             max_file_mb=_int("QUMAIL_MAX_FILE_MB", 15, 1, 25),
             max_total_mb=_int("QUMAIL_MAX_TOTAL_MB", 18, 1, 25),
             level3_warn_kb=_int("QUMAIL_LEVEL3_WARN_KB", 50, 1, 1024),
+            contacts_file=os.getenv("QUMAIL_CONTACTS_FILE", "~/.qumail/contacts.json").strip() or "~/.qumail/contacts.json",
             env_file=str(env_path) if env_path else "",
         )
 
