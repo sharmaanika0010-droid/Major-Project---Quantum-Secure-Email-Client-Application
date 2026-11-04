@@ -11,6 +11,7 @@ from tkinter import filedialog
 
 import customtkinter as ctk
 
+from qumail import audit
 from qumail.contacts import get_book
 from qumail.crypto import envelope, limits, pipeline
 from qumail.email.smtp_client import SMTPClient, SMTPError
@@ -230,6 +231,7 @@ class ComposeWindow(ctk.CTkToplevel):
 
     def _ok(self, msg_id: str, level: int):
         self.status.configure(text=f"Sent (Level {level})", text_color="#2ecc71")
+        audit.log("mail_sent", to=self.to.get().strip(), level=level, message_id=msg_id, attachments=len(self.files))
         try:
             self.book.remember(self.to.get().strip(), level)    # auto-add recipient, remember level
         except Exception:                                       # noqa: BLE001 — never block the send UI

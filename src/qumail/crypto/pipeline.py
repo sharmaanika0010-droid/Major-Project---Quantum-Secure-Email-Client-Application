@@ -11,6 +11,7 @@ import mimetypes
 from pathlib import Path
 from typing import List, Tuple
 
+from qumail import audit
 from qumail.crypto import envelope, limits
 from qumail.crypto.envelope import QuMailCryptoError
 from qumail.km.client import KMClient, KMError
@@ -59,6 +60,18 @@ def check_capacity(level: int, text: str, files: List[str], km: KMClient, hybrid
     return None
 
 
+def _request(km: KMClient, nbytes: int, purpose: str):
+    key = km.request_key(nbytes)
+    audit.log("key_requested", key_id=key.key_id, bytes=nbytes, purpose=purpose)
+    return key
+
+
+def _encrypted(prepared, level: int, n_files: int, hybrid: bool = False):
+    audit.log("mail_encrypted", level=level, key_id=getattr(prepared, "key_id", None),
+              extra_keys=list(getattr(prepared, "extra_key_ids", [])), attachments=n_files, hybrid=hybrid)
+    return prepared
+
+
 def prepare(level: int, text: str, files: List[str], km: KMClient, hybrid: bool = False):
     """Encrypt according to level. Returns (Prepared, attachments-for-smtp).
 
@@ -71,35 +84,35 @@ def prepare(level: int, text: str, files: List[str], km: KMClient, hybrid: bool 
     atts = _read(files)
     if level == 2:
         from qumail.crypto import level2
-        key = km.request_key(level2.KEY_BYTES_NEEDED)
+        key = _request(km, level2.KEY_BYTES_NEEDED, "level2")
         prepared = envelope.encrypt(2, text, key_material=key.material, key_id=key.key_id)
         aes = level2.derive_key(key.material)
-        return prepared, [(n + ".qenc", level2.encrypt_bytes(d, aes)) for n, d in atts]
+        return _encrypted(prepared, 2, len(atts)), [(n + ".qenc", level2.encrypt_bytes(d, aes)) for n, d in atts]
 
     if level == 4:
         from qumail.crypto import level4
-        key = km.request_key(level4.KEY_BYTES_NEEDED)
+        key = _request(km, level4.KEY_BYTES_NEEDED, "level4")
         prepared = envelope.encrypt(4, text, key_material=key.material, key_id=key.key_id)
         keys = level4.derive_keys(key.material)
-        return prepared, [(n + ".qenc", level4.encrypt_bytes(d, keys)) for n, d in atts]
+        return _encrypted(prepared, 4, len(atts)), [(n + ".qenc", level4.encrypt_bytes(d, keys)) for n, d in atts]
 
     if level == 3:
         from qumail.crypto import level3
         if hybrid and atts:
             from qumail.crypto import level2
-            key = km.request_key(level3.key_bytes_needed(len(text.encode()), []))
+            key = _request(km, level3.key_bytes_needed(len(text.encode()), []), "level3-body")
             prepared, _ = envelope.encrypt(3, text, key_material=key.material, key_id=key.key_id, attachments=[])
-            att_key = km.request_key(level2.KEY_BYTES_NEEDED)
+            att_key = _request(km, level2.KEY_BYTES_NEEDED, "level3-hybrid-attachments")
             env = json.loads(prepared.body)
             env["att"] = {"level": 2, "key_id": att_key.key_id}
             prepared.body = json.dumps(env, indent=1)
             prepared.extra_key_ids = [att_key.key_id]
             aes = level2.derive_key(att_key.material)
-            return prepared, [(n + ".qenc", level2.encrypt_bytes(d, aes)) for n, d in atts]
+            return _encrypted(prepared, 3, len(atts), hybrid=True), [(n + ".qenc", level2.encrypt_bytes(d, aes)) for n, d in atts]
         need = level3.key_bytes_needed(len(text.encode()), [len(d) for _, d in atts])
-        key = km.request_key(need)
+        key = _request(km, need, "level3")
         prepared, blobs = envelope.encrypt(3, text, key_material=key.material, key_id=key.key_id, attachments=atts)
-        return prepared, blobs
+        return _encrypted(prepared, 3, len(atts)), blobs
 
     raise QuMailCryptoError(f"Level {level} not available")
 
@@ -110,8 +123,9 @@ def burn_key(prepared, km: KMClient) -> None:
     for kid in filter(None, ids):
         try:
             km.consume(kid)
+            audit.log("key_burned", key_id=kid, reason="send failed")
         except KMError:
-            pass  # best effort — KM may be down too
+            audit.log("key_burned", key_id=kid, reason="send failed", km_error=True)
 
 
 def open_message(msg, km: KMClient) -> str | None:
@@ -121,6 +135,7 @@ def open_message(msg, km: KMClient) -> str | None:
     if not msg.key_id:
         raise QuMailCryptoError("Encrypted message has no X-QuMail-KeyID header")
     key = km.get_key(msg.key_id)
+    audit.log("key_fetched", key_id=msg.key_id, level=msg.level, bytes=len(key.material))
 
     if msg.level == 2:
         from qumail.crypto import level2
@@ -144,6 +159,7 @@ def open_message(msg, km: KMClient) -> str | None:
                     att.data = level2.decrypt_bytes(att.data, aes)
                     att.filename = att.filename[:-5]
                     att.content_type = mimetypes.guess_type(att.filename)[0] or "application/octet-stream"
+            audit.log("mail_decrypted", level=3, key_id=msg.key_id, extra_keys=[att_info["key_id"]], hybrid=True)
             return (f"🔓 Decrypted with quantum key {msg.key_id} (Level 3 body) + {att_info['key_id']} "
                     f"(Level 2 attachments)")
         enc = [(a.filename, a.data) for a in msg.attachments if a.filename.endswith(".qenc")]
@@ -163,7 +179,9 @@ def open_message(msg, km: KMClient) -> str | None:
                 att.data = level4.decrypt_bytes(att.data, keys)
                 att.filename = att.filename[:-5]
                 att.content_type = mimetypes.guess_type(att.filename)[0] or "application/octet-stream"
+        audit.log("mail_decrypted", level=4, key_id=msg.key_id)
         return f"🔓 Decrypted with quantum key {msg.key_id} (Level 4, AES-256-GCM + ChaCha20-Poly1305 double layer)"
     else:
         raise QuMailCryptoError(f"Level {msg.level} not available")
+    audit.log("mail_decrypted", level=msg.level, key_id=msg.key_id)
     return f"🔓 Decrypted with quantum key {msg.key_id} (Level {msg.level}, {len(key.material):,} key bytes)"

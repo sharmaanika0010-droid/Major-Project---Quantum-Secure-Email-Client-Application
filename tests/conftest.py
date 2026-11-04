@@ -71,3 +71,12 @@ def empty_km():
 @pytest.fixture
 def offline_km():
     return FakeKM(online=False)
+
+
+@pytest.fixture(autouse=True)
+def _isolated_audit(tmp_path, monkeypatch):
+    """SCRUM-58: tests must never write to the user's real ~/.qumail/audit.log."""
+    from qumail import audit as _audit
+    monkeypatch.setattr(_audit, "_log", _audit.AuditLog(tmp_path / "audit.log"))
+    yield
+    _audit._log = None
