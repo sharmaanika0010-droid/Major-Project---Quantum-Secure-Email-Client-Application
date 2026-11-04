@@ -4,6 +4,7 @@ from __future__ import annotations
 import customtkinter as ctk
 
 from qumail.audit import AuditLog
+from qumail.gui.ui import bind_dialog_keys, center_on_parent
 
 _ICON = {"key_requested": "🔑", "key_fetched": "🔎", "key_consumed": "🔥", "key_burned": "🔥",
          "mail_encrypted": "🔒", "mail_sent": "✉", "mail_decrypted": "🔓", "decrypt_failed": "⛔", "login": "👤"}
@@ -14,7 +15,9 @@ class AuditWindow(ctk.CTkToplevel):
         super().__init__(master)
         self.audit = audit
         self.title("QuMail — Key usage audit trail")
-        self.geometry("820x480")
+        center_on_parent(self, master.winfo_toplevel(), 900, 520)
+        self.minsize(700, 400)
+        bind_dialog_keys(self, self.destroy)
         self.after(100, self.lift)
 
         top = ctk.CTkFrame(self, fg_color="transparent")
