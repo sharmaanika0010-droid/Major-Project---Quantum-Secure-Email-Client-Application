@@ -3,6 +3,7 @@ import csv
 import math
 import os
 import secrets
+import sys
 import threading
 from datetime import datetime, timezone
 
@@ -10,7 +11,9 @@ from flask import Flask, jsonify, request
 
 KEY_COUNT = 100
 KEY_SIZE = 1024
-CSV_FILE = os.path.join(os.path.dirname(__file__), "keybank.csv")
+# SCRUM-62: when frozen by PyInstaller, __file__ points into a temp dir — keep the key bank next to the .exe
+_BASE_DIR = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(__file__)
+CSV_FILE = os.path.join(_BASE_DIR, "keybank.csv")
 FIELDS = ["key_id", "size", "status", "created_at", "consumed_at", "key_material_b64"]
 
 app = Flask(__name__)

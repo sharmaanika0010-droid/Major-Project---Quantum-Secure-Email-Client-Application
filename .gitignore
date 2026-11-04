@@ -22,8 +22,11 @@ token.json
 .DS_Store
 Thumbs.db
 
-# PyInstaller
+# PyInstaller (build output only — packaging/*.spec is versioned)
+build/
+dist/
 *.spec
+!packaging/*.spec
 
 # KM simulator state (contains key material, changes on every send)
 SCRUM_Works/SCRUM-14/keybank.csv
