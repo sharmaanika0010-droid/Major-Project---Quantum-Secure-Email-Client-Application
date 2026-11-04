@@ -1,0 +1,9 @@
+# Bandit — Python security static analysis (SCRUM-59). Run: bandit -c bandit.yaml -r src
+exclude_dirs:
+  - src/km_simulator        # Flask demo simulator (debug server by design)
+  - tests
+
+skips:
+  # B413 flags "Crypto.*" as the abandoned PyCrypto package. We use pycryptodome,
+  # which installs under the same namespace and is actively maintained.
+  - B413

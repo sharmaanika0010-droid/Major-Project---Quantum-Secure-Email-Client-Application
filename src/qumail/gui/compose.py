@@ -6,6 +6,7 @@ so Levels 2/3/4 appear automatically once their modules register.
 """
 from __future__ import annotations
 
+import contextlib
 import threading
 from tkinter import filedialog
 
@@ -232,10 +233,9 @@ class ComposeWindow(ctk.CTkToplevel):
     def _ok(self, msg_id: str, level: int):
         self.status.configure(text=f"Sent (Level {level})", text_color="#2ecc71")
         audit.log("mail_sent", to=self.to.get().strip(), level=level, message_id=msg_id, attachments=len(self.files))
-        try:
-            self.book.remember(self.to.get().strip(), level)    # auto-add recipient, remember level
-        except Exception:                                       # noqa: BLE001 — never block the send UI
-            pass
+        # auto-add recipient / remember level; a contacts-file error must never block the send UI
+        with contextlib.suppress(OSError, ValueError):
+            self.book.remember(self.to.get().strip(), level)
         if self.on_sent:
             self.on_sent(msg_id, level)
         self.after(900, self.destroy)
