@@ -31,6 +31,7 @@ from qumail.gui.ui import (
     FONT_TITLE,
     bind_dialog_keys,
     center_on_parent,
+    ellipsize,
     friendly_date,
     friendly_sender,
 )
@@ -120,15 +121,19 @@ class InboxFrame(ctk.CTkFrame):
     def _render_list(self, items):
         self.status.configure(text=f"{len(items)} messages (newest first) — click a message to read it")
         for m in items:
-            row = ctk.CTkButton(
-                self.list, anchor="w", height=52, corner_radius=6,
-                fg_color=("gray90", "gray20"), hover_color=("gray80", "gray30"),
-                text_color=("black", "white"),
-                text=f"{friendly_sender(m.sender)[:30]}\n{m.subject[:44] or '(no subject)'}",
-                font=FONT,
-                command=lambda uid=m.uid: self.open_message(uid),
-            )
+            # BB-01: a CTkButton centres multi-line text, so sender/subject looked misaligned.
+            # Use a frame with two left-anchored labels and make the whole row clickable.
+            row = ctk.CTkFrame(self.list, height=52, corner_radius=6, fg_color=("gray90", "gray20"), cursor="hand2")
             row.pack(fill="x", pady=2)
+            row.pack_propagate(False)
+            sender_lbl = ctk.CTkLabel(row, text=ellipsize(friendly_sender(m.sender), 30), font=FONT, anchor="w", text_color=("black", "white"))
+            sender_lbl.place(x=10, y=5, relwidth=0.72)
+            subj_lbl = ctk.CTkLabel(row, text=ellipsize(m.subject or "(no subject)", 48), font=FONT_SMALL, anchor="w", text_color=("gray25", "gray75"))
+            subj_lbl.place(x=10, y=27, relwidth=0.72)
+            for w in (row, sender_lbl, subj_lbl):
+                w.bind("<Button-1>", lambda _e, uid=m.uid: self.open_message(uid))
+                w.bind("<Enter>", lambda _e, r=row: r.configure(fg_color=("gray80", "gray30")))
+                w.bind("<Leave>", lambda _e, r=row: r.configure(fg_color=("gray90", "gray20")))
             badge = f"L{m.level}" if m.level > 1 else ""
             if m.has_attachments:
                 badge = ("📎 " + badge).strip()

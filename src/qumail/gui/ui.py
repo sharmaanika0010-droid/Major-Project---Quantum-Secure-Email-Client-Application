@@ -73,3 +73,21 @@ def friendly_sender(raw: str) -> str:
     """'Anika Sharma <a@b.com>' → 'Anika Sharma';  '<a@b.com>' or 'a@b.com' → 'a@b.com'."""
     name, addr = parseaddr(raw or "")
     return (name or addr or raw or "").strip().strip('"')
+
+
+def ellipsize(text: str, limit: int) -> str:
+    """Truncate overflowing list labels using a visible ellipsis (bug bash BB-04)."""
+    text = (text or "").strip()
+    return text if len(text) <= limit else text[: max(1, limit - 1)].rstrip() + "…"
+
+
+def parse_recipients(raw: str) -> list[str]:
+    """'a@x.com, b@y.com; c@z.com' → ['a@x.com', 'b@y.com', 'c@z.com'] (bug bash BB-03).
+
+    Returns [] when any entry is not a plausible address, so the caller can refuse the send.
+    """
+    parts = [p.strip() for p in (raw or "").replace(";", ",").split(",")]
+    parts = [p for p in parts if p]
+    if not parts or any("@" not in p or p.startswith("@") or p.endswith("@") or " " in p for p in parts):
+        return []
+    return list(dict.fromkeys(parts))

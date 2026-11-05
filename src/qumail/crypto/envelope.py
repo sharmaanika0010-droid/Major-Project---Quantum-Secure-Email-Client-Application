@@ -9,6 +9,7 @@ Level 1 sends the plain text body unchanged and only sets the X-QuMail-Level: 1 
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from typing import Callable, Dict, Optional
@@ -36,6 +37,13 @@ class Prepared:
         if self.key_id:
             h[HDR_KEYID] = self.key_id
         return h
+
+
+def key_fingerprint(material: bytes) -> str:
+    """Short public fingerprint of a quantum key (SHA-256 prefix) — stored in the envelope so the
+    receiver can tell "wrong Key Manager / key bank" apart from "tampered mail" (bug bash BB-07).
+    12 hex chars of a hash reveal nothing usable about the 1 KB key itself."""
+    return hashlib.sha256(material).hexdigest()[:12]
 
 
 class QuMailCryptoError(Exception):
@@ -106,3 +114,7 @@ def load_levels() -> None:
                 continue  # level module not written yet
             import sys
             print(f"[QuMail] {mod} disabled — missing dependency: {exc.name} (pip install -r requirements.txt)", file=sys.stderr)
+
+
+class KeyMismatch(QuMailCryptoError):
+    """The key fetched from the Key Manager is not the key the sender used (different key bank)."""
