@@ -75,6 +75,8 @@ class Settings:
     contacts_file: str = "~/.qumail/contacts.json"
     # key-usage audit trail (SCRUM-58) — JSON lines, outside the repo
     audit_file: str = "~/.qumail/audit.log"
+    # SCRUM-64: receiver burns the key after the first successful decrypt (read-once mail)
+    consume_after_decrypt: bool = False
     # where the values came from (for the About / debug output)
     env_file: str = ""
 
@@ -106,6 +108,7 @@ class Settings:
             level3_warn_kb=_int("QUMAIL_LEVEL3_WARN_KB", 50, 1, 1024),
             contacts_file=os.getenv("QUMAIL_CONTACTS_FILE", "~/.qumail/contacts.json").strip() or "~/.qumail/contacts.json",
             audit_file=os.getenv("QUMAIL_AUDIT_FILE", "~/.qumail/audit.log").strip() or "~/.qumail/audit.log",
+            consume_after_decrypt=os.getenv("QUMAIL_CONSUME_AFTER_DECRYPT", "0").strip().lower() in ("1", "true", "yes", "on"),
             env_file=str(env_path) if env_path else "",
         )
 

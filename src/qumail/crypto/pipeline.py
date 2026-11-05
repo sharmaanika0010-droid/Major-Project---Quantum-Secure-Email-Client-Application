@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from qumail import audit
+from qumail.config import get_settings
 from qumail.crypto import envelope, limits
 from qumail.crypto.envelope import QuMailCryptoError
 from qumail.km.client import KMClient, KMError
@@ -129,11 +130,35 @@ def burn_key(prepared, km: KMClient) -> None:
 
 
 def open_message(msg, km: KMClient) -> str | None:
-    """Decrypt msg in place (body + attachments). Returns a status note or None for Level 1."""
+    """Decrypt msg in place (body + attachments). Returns a status note or None for Level 1.
+
+    SCRUM-64: with QUMAIL_CONSUME_AFTER_DECRYPT=1 the key(s) are marked CONSUMED after the
+    first successful decrypt, so the mail becomes read-once (true one-time key policy).
+    """
+    note = _open_message(msg, km)
+    if note is not None and get_settings().consume_after_decrypt:
+        ids = [msg.key_id] + [a.get("key_id") for a in [_hybrid_att(msg)] if a]
+        for kid in filter(None, ids):
+            try:
+                km.consume(kid)
+                audit.log("key_consumed", key_id=kid, reason="read once")
+            except KMError:
+                pass
+        note += " · key consumed (read-once policy)"
+    return note
+
+
+def _hybrid_att(msg) -> dict | None:
+    env = envelope.parse_envelope(getattr(msg, "_raw_body", "") or "") or {}
+    return env.get("att")
+
+
+def _open_message(msg, km: KMClient) -> str | None:
     if msg.level < 2:
         return None
     if not msg.key_id:
         raise QuMailCryptoError("Encrypted message has no X-QuMail-KeyID header")
+    msg._raw_body = msg.body                                   # kept for the read-once policy (hybrid att key)
     key = km.get_key(msg.key_id)
     audit.log("key_fetched", key_id=msg.key_id, level=msg.level, bytes=len(key.material))
 
