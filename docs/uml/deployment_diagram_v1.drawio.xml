@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram name="Deployment" id="dep">
+    <mxGraphModel dx="1537" dy="839" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1500" pageHeight="750" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="c2" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=left;" value="QuMail — Deployment Diagram" vertex="1">
+          <mxGeometry height="30" width="900" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" parent="1" style="text;html=1;fontSize=12;align=left;fontColor=#666666;" value="Windows exe deployment (PyInstaller) · Key Manager simulator · Gmail / Yahoo" vertex="1">
+          <mxGeometry height="20" width="900" x="40" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" parent="1" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;align=left;verticalAlign=top;spacingLeft=18;spacingTop=2;fontStyle=1;fontSize=13;fillColor=#FAFAFA;strokeColor=#555555;" value="«device»  Sender PC — Windows 10/11" vertex="1">
+          <mxGeometry height="440" width="400" x="40" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" parent="1" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=6;fontStyle=2;fontSize=11;dashed=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;" value="«execution environment»  QuMail-GUI.exe  (Python 3.12 runtime bundled)" vertex="1">
+          <mxGeometry height="240" width="360" x="60" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» GUI (customtkinter)" vertex="1">
+          <mxGeometry height="44" width="160" x="75" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» KM Client (HTTP)" vertex="1">
+          <mxGeometry height="44" width="160" x="245" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="c8" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» Crypto Module L1–L4" vertex="1">
+          <mxGeometry height="44" width="160" x="75" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="c9" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» Mail Client (IMAP/SMTP)" vertex="1">
+          <mxGeometry height="44" width="160" x="245" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="c10" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» Config · Audit log" vertex="1">
+          <mxGeometry height="44" width="160" x="75" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="c11" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» Address Book" vertex="1">
+          <mxGeometry height="44" width="160" x="245" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="c12" parent="1" style="shape=note;size=10;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fontSize=10;fillColor=#FFF2CC;strokeColor=#D6B656;" value="«artifact»  START_QUMAIL.bat  — starts QuMail-KM.exe, then QuMail-GUI.exe" vertex="1">
+          <mxGeometry height="28" width="330" x="75" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="c13" parent="1" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=6;fontStyle=2;fontSize=11;dashed=1;fillColor=#FFFFFF;strokeColor=#999999;" value="«artifact»  %USERPROFILE%\.qumail\" vertex="1">
+          <mxGeometry height="80" width="360" x="60" y="395" as="geometry" />
+        </mxCell>
+        <mxCell id="c14" parent="1" style="shape=note;size=10;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fontSize=10;fillColor=#FFF2CC;strokeColor=#D6B656;" value=".env  (settings, no secrets)" vertex="1">
+          <mxGeometry height="36" width="160" x="75" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="c15" parent="1" style="shape=note;size=10;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fontSize=10;fillColor=#FFF2CC;strokeColor=#D6B656;" value="contacts.json · audit.log" vertex="1">
+          <mxGeometry height="36" width="160" x="245" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="c16" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacing=6;fontSize=10;fillColor=#F8F8F8;strokeColor=#BBBBBB;" value="No Python installation needed on the PC · pycryptodome, requests, customtkinter bundled" vertex="1">
+          <mxGeometry height="36" width="360" x="60" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="c17" parent="1" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;align=left;verticalAlign=top;spacingLeft=18;spacingTop=2;fontStyle=1;fontSize=13;fillColor=#FAFAFA;strokeColor=#555555;" value="«device»  Key Manager host — same PC (demo) / LAN server" vertex="1">
+          <mxGeometry height="200" width="380" x="560" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="c18" parent="1" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=6;fontStyle=2;fontSize=11;dashed=1;fillColor=#D5E8D4;strokeColor=#82B366;" value="«execution environment»  QuMail-KM.exe  (Flask, port 5000)" vertex="1">
+          <mxGeometry height="145" width="340" x="580" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c19" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component»  KM REST API /keys/request · /keys/&lt;id&gt; · /keys/consume · /keys/status" vertex="1">
+          <mxGeometry height="44" width="310" x="595" y="172" as="geometry" />
+        </mxCell>
+        <mxCell id="c20" parent="1" style="shape=note;size=10;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fontSize=10;fillColor=#FFF2CC;strokeColor=#D6B656;" value="«artifact»  keybank.csv 100 keys × 1 KB + state" vertex="1">
+          <mxGeometry height="44" width="150" x="595" y="226" as="geometry" />
+        </mxCell>
+        <mxCell id="c21" parent="1" style="shape=note;size=10;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fontSize=10;fillColor=#FFF2CC;strokeColor=#D6B656;" value="«artifact»  km_simulator.log request audit trail" vertex="1">
+          <mxGeometry height="44" width="150" x="755" y="226" as="geometry" />
+        </mxCell>
+        <mxCell id="c22" parent="1" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;align=left;verticalAlign=top;spacingLeft=18;spacingTop=2;fontStyle=1;fontSize=13;fillColor=#FAFAFA;strokeColor=#555555;fillColor=#FFF4E6;strokeColor=#D79B00;" value="«node»  Email Provider — Gmail / Yahoo  (Internet)" vertex="1">
+          <mxGeometry height="200" width="380" x="560" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="c23" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;fillColor=#FFE6CC;" value="«service»  SMTP server smtp.gmail.com" vertex="1">
+          <mxGeometry height="44" width="150" x="595" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="c24" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;fillColor=#FFE6CC;" value="«service»  IMAP server imap.gmail.com" vertex="1">
+          <mxGeometry height="44" width="150" x="755" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="c25" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacing=6;fontSize=10;fillColor=#F8F8F8;strokeColor=#BBBBBB;" value="Transports ciphertext + X-QuMail-Level / X-QuMail-KeyID headers only — never plaintext, never key material" vertex="1">
+          <mxGeometry height="36" width="310" x="595" y="445" as="geometry" />
+        </mxCell>
+        <mxCell id="c26" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacing=6;fontSize=10;fillColor=#F8F8F8;strokeColor=#BBBBBB;" value="Keys never leave the local network; only the KM holds key material" vertex="1">
+          <mxGeometry height="30" width="310" x="595" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="c27" parent="1" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;align=left;verticalAlign=top;spacingLeft=18;spacingTop=2;fontStyle=1;fontSize=13;fillColor=#FAFAFA;strokeColor=#555555;" value="«device»  Receiver PC — Windows 10/11" vertex="1">
+          <mxGeometry height="440" width="400" x="1060" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="c28" parent="1" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=6;fontStyle=2;fontSize=11;dashed=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;" value="«execution environment»  QuMail-GUI.exe  (same build)" vertex="1">
+          <mxGeometry height="240" width="360" x="1080" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="c29" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» KM Client (HTTP)" vertex="1">
+          <mxGeometry height="44" width="160" x="1095" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="c30" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» GUI — Inbox / Read" vertex="1">
+          <mxGeometry height="44" width="160" x="1265" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="c31" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» Mail Client (IMAP)" vertex="1">
+          <mxGeometry height="44" width="160" x="1095" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="c32" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» Crypto Module — decrypt" vertex="1">
+          <mxGeometry height="44" width="160" x="1265" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="c33" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» Config · Audit log" vertex="1">
+          <mxGeometry height="44" width="160" x="1095" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="c34" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» Address Book" vertex="1">
+          <mxGeometry height="44" width="160" x="1265" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="c35" parent="1" style="shape=note;size=10;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fontSize=10;fillColor=#FFF2CC;strokeColor=#D6B656;" value="«artifact»  START_QUMAIL.bat" vertex="1">
+          <mxGeometry height="28" width="330" x="1095" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="c36" parent="1" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=6;fontStyle=2;fontSize=11;dashed=1;fillColor=#FFFFFF;strokeColor=#999999;" value="«artifact»  %USERPROFILE%\.qumail\" vertex="1">
+          <mxGeometry height="80" width="360" x="1080" y="395" as="geometry" />
+        </mxCell>
+        <mxCell id="c37" parent="1" style="shape=note;size=10;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fontSize=10;fillColor=#FFF2CC;strokeColor=#D6B656;" value=".env  (settings, no secrets)" vertex="1">
+          <mxGeometry height="36" width="160" x="1095" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="c38" parent="1" style="shape=note;size=10;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fontSize=10;fillColor=#FFF2CC;strokeColor=#D6B656;" value="contacts.json · audit.log" vertex="1">
+          <mxGeometry height="36" width="160" x="1265" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="c39" parent="1" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacing=6;fontSize=10;fillColor=#F8F8F8;strokeColor=#BBBBBB;fillColor=#FFF2CC;strokeColor=#D6B656;" value="Must use the SAME Key Manager as the sender (shared key bank), otherwise “Integrity check failed”" vertex="1">
+          <mxGeometry height="36" width="360" x="1080" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="c40" parent="1" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;align=left;verticalAlign=top;spacingLeft=18;spacingTop=2;fontStyle=1;fontSize=13;fillColor=#FAFAFA;strokeColor=#555555;" value="«node»  GitHub — repository + Actions CI" vertex="1">
+          <mxGeometry height="120" width="400" x="40" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="c41" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» ruff + bandit" vertex="1">
+          <mxGeometry height="50" width="110" x="60" y="622" as="geometry" />
+        </mxCell>
+        <mxCell id="c42" parent="1" style="shape=component;align=left;spacingLeft=34;html=1;whiteSpace=wrap;fontSize=11;fillColor=#FFFFFF;strokeColor=#333333;" value="«component» pytest" vertex="1">
+          <mxGeometry height="50" width="110" x="185" y="622" as="geometry" />
+        </mxCell>
+        <mxCell id="c43" parent="1" style="shape=note;size=10;whiteSpace=wrap;html=1;align=left;spacingLeft=6;fontSize=10;fillColor=#FFF2CC;strokeColor=#D6B656;" value="«artifact» QuMail-win.zip" vertex="1">
+          <mxGeometry height="50" width="110" x="310" y="622" as="geometry" />
+        </mxCell>
+        <mxCell id="c44" parent="1" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=6;fontStyle=2;fontSize=11;dashed=1;fillColor=#FFFFFF;strokeColor=#999999;fontStyle=1;" value="Build &amp; install path" vertex="1">
+          <mxGeometry height="120" width="380" x="560" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="c45" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=middle;spacingLeft=4;" value="1. packaging\build_exe.bat  (PyInstaller, qumail.spec)&lt;div&gt;&amp;nbsp;2. dist\QuMail-GUI\  +  dist\QuMail-KM\  +  START_QUMAIL.bat 3. zip →&lt;/div&gt;&lt;div&gt;&amp;nbsp;copy to Sender / Receiver PC →&lt;/div&gt;&lt;div&gt;&amp;nbsp;run START_QUMAIL.bat (see docs/deploy/BUILD_EXE.md)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="84" width="350" x="575" y="608" as="geometry" />
+        </mxCell>
+        <mxCell id="c46" parent="1" style="rounded=1;arcSize=6;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=6;fontStyle=2;fontSize=11;dashed=1;fillColor=#FFFFFF;strokeColor=#999999;fontStyle=1;" value="Legend" vertex="1">
+          <mxGeometry height="120" width="400" x="1060" y="580" as="geometry" />
+        </mxCell>
+        <mxCell id="c47" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=middle;spacingLeft=4;" value="3-D box = device / node        dashed box = execution environment" vertex="1">
+          <mxGeometry height="22" width="370" x="1075" y="608" as="geometry" />
+        </mxCell>
+        <mxCell id="c48" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=middle;spacingLeft=4;" value="component symbol = deployed software        note symbol = artifact (file)" vertex="1">
+          <mxGeometry height="22" width="370" x="1075" y="632" as="geometry" />
+        </mxCell>
+        <mxCell id="c49" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=middle;spacingLeft=4;" value="line = communication path (protocol : port)" vertex="1">
+          <mxGeometry height="22" width="370" x="1075" y="656" as="geometry" />
+        </mxCell>
+        <mxCell id="c50" edge="1" parent="1" source="c7" style="endArrow=none;html=1;fontSize=11;labelBackgroundColor=#FFFFFF;strokeWidth=1.5;strokeColor=#333333;exitX=1;exitY=0.5;entryX=0;entryY=0.5;verticalAlign=middle;" target="c19" value="REST / HTTP : 5000">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="480" y="197" />
+              <mxPoint x="480" y="194" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c51" edge="1" parent="1" source="c9" style="endArrow=none;html=1;fontSize=11;labelBackgroundColor=#FFFFFF;strokeWidth=1.5;strokeColor=#333333;exitX=1;exitY=0.5;entryX=0;entryY=0.5;verticalAlign=middle;" target="c23" value="SMTP + STARTTLS : 587 (or SSL : 465)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="520" y="252" />
+              <mxPoint x="520" y="407" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c52" edge="1" parent="1" source="c29" style="endArrow=none;html=1;fontSize=11;labelBackgroundColor=#FFFFFF;strokeWidth=1.5;strokeColor=#333333;exitX=0;exitY=0.5;entryX=1;entryY=0.5;verticalAlign=middle;" target="c19" value="REST / HTTP : 5000">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1020" y="197" />
+              <mxPoint x="1020" y="194" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c53" edge="1" parent="1" source="c31" style="endArrow=none;html=1;fontSize=11;labelBackgroundColor=#FFFFFF;strokeWidth=1.5;strokeColor=#333333;exitX=0;exitY=0.5;entryX=1;entryY=0.5;verticalAlign=middle;" target="c24" value="IMAP over SSL : 993">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="980" y="252" />
+              <mxPoint x="980" y="407" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
