@@ -4,3 +4,4 @@ pytest-cov
 ruff
 bandit
 pip-audit
+pyinstaller
