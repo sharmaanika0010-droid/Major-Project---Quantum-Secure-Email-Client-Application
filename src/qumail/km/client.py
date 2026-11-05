@@ -64,7 +64,8 @@ class KMClient:
         if resp.status_code == 410:
             raise KeyConsumed(f"{what} was already consumed (one-time key cannot be reused)")
         if resp.status_code == 404:
-            raise KMError(f"{what}: unknown key id")
+            raise KMError(f"{what} does not exist in this Key Manager ({self.base_url}) — the mail was "
+                          "encrypted with a different Key Manager / key bank")
         raise KMError(f"{what}: {detail} (HTTP {resp.status_code})")
 
     # -- API ------------------------------------------------------------

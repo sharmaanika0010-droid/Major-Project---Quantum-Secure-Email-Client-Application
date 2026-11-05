@@ -14,7 +14,7 @@ from typing import List, Tuple
 from qumail import audit
 from qumail.config import get_settings
 from qumail.crypto import envelope, limits
-from qumail.crypto.envelope import QuMailCryptoError
+from qumail.crypto.envelope import KeyMismatch, QuMailCryptoError, key_fingerprint
 from qumail.km.client import KMClient, KMError
 
 KEY_UNIT = 1024  # KM hands out 1 KB keys
@@ -67,6 +67,25 @@ def _request(km: KMClient, nbytes: int, purpose: str):
     return key
 
 
+def _stamp(prepared, material: bytes, field: str = "key_fp"):
+    """Add the key fingerprint to the envelope JSON (BB-07: detect wrong Key Manager on receive)."""
+    env = json.loads(prepared.body)
+    env[field] = key_fingerprint(material)
+    prepared.body = json.dumps(env, indent=1)
+    return prepared
+
+
+WRONG_KM_HINT = ("Sender and receiver are not using the same Key Manager (different key bank). "
+                 "Run one KM for both sides — e.g. the same QuMail-KM.exe / keybank.csv — and send the mail again.")
+
+
+def _verify_key(msg_env: dict, key_id: str, material: bytes, field: str = "key_fp") -> None:
+    fp = msg_env.get(field)
+    if fp and fp != key_fingerprint(material):
+        audit.log("key_mismatch", key_id=key_id, expected_fp=fp, got_fp=key_fingerprint(material))
+        raise KeyMismatch(f"Key {key_id} from this Key Manager is not the key the sender used. {WRONG_KM_HINT}")
+
+
 def _encrypted(prepared, level: int, n_files: int, hybrid: bool = False):
     audit.log("mail_encrypted", level=level, key_id=getattr(prepared, "key_id", None),
               extra_keys=list(getattr(prepared, "extra_key_ids", [])), attachments=n_files, hybrid=hybrid)
@@ -86,14 +105,14 @@ def prepare(level: int, text: str, files: List[str], km: KMClient, hybrid: bool 
     if level == 2:
         from qumail.crypto import level2
         key = _request(km, level2.KEY_BYTES_NEEDED, "level2")
-        prepared = envelope.encrypt(2, text, key_material=key.material, key_id=key.key_id)
+        prepared = _stamp(envelope.encrypt(2, text, key_material=key.material, key_id=key.key_id), key.material)
         aes = level2.derive_key(key.material)
         return _encrypted(prepared, 2, len(atts)), [(n + ".qenc", level2.encrypt_bytes(d, aes)) for n, d in atts]
 
     if level == 4:
         from qumail.crypto import level4
         key = _request(km, level4.KEY_BYTES_NEEDED, "level4")
-        prepared = envelope.encrypt(4, text, key_material=key.material, key_id=key.key_id)
+        prepared = _stamp(envelope.encrypt(4, text, key_material=key.material, key_id=key.key_id), key.material)
         keys = level4.derive_keys(key.material)
         return _encrypted(prepared, 4, len(atts)), [(n + ".qenc", level4.encrypt_bytes(d, keys)) for n, d in atts]
 
@@ -106,6 +125,8 @@ def prepare(level: int, text: str, files: List[str], km: KMClient, hybrid: bool 
             att_key = _request(km, level2.KEY_BYTES_NEEDED, "level3-hybrid-attachments")
             env = json.loads(prepared.body)
             env["att"] = {"level": 2, "key_id": att_key.key_id}
+            env["key_fp"] = key_fingerprint(key.material)
+            env["att_fp"] = key_fingerprint(att_key.material)
             prepared.body = json.dumps(env, indent=1)
             prepared.extra_key_ids = [att_key.key_id]
             aes = level2.derive_key(att_key.material)
@@ -113,7 +134,7 @@ def prepare(level: int, text: str, files: List[str], km: KMClient, hybrid: bool 
         need = level3.key_bytes_needed(len(text.encode()), [len(d) for _, d in atts])
         key = _request(km, need, "level3")
         prepared, blobs = envelope.encrypt(3, text, key_material=key.material, key_id=key.key_id, attachments=atts)
-        return _encrypted(prepared, 3, len(atts)), blobs
+        return _encrypted(_stamp(prepared, key.material), 3, len(atts)), blobs
 
     raise QuMailCryptoError(f"Level {level} not available")
 
@@ -161,6 +182,19 @@ def _open_message(msg, km: KMClient) -> str | None:
     msg._raw_body = msg.body                                   # kept for the read-once policy (hybrid att key)
     key = km.get_key(msg.key_id)
     audit.log("key_fetched", key_id=msg.key_id, level=msg.level, bytes=len(key.material))
+    head = envelope.parse_envelope(msg.body) or {}
+    _verify_key(head, msg.key_id, key.material)              # BB-07: wrong KM → clear message, not "Integrity"
+    try:
+        return _decrypt_with(msg, km, key)
+    except KeyMismatch:
+        raise
+    except QuMailCryptoError as exc:
+        if "key_fp" not in head and "Integrity" in str(exc):   # mail from before fingerprints existed
+            raise QuMailCryptoError(f"{exc}. Most likely cause: {WRONG_KM_HINT}") from exc
+        raise
+
+
+def _decrypt_with(msg, km: KMClient, key) -> str | None:
 
     if msg.level == 2:
         from qumail.crypto import level2
@@ -178,6 +212,7 @@ def _open_message(msg, km: KMClient) -> str | None:
             from qumail.crypto import level2
             msg.body, _ = envelope.decrypt(3, msg.body, key_material=key.material, attachments=[])
             att_key = km.get_key(att_info["key_id"])
+            _verify_key(env, att_info["key_id"], att_key.material, field="att_fp")
             aes = level2.derive_key(att_key.material)
             for att in msg.attachments:
                 if att.filename.endswith(".qenc"):

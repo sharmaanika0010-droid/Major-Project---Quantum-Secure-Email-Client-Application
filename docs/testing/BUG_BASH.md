@@ -17,7 +17,7 @@ Severity: **S1** blocks a core flow · **S2** wrong behaviour, workaround exists
 | BB-04 | Inbox list | Mail with long subject | Visible "…" when cut | Hard cut at 44 chars, no hint text continues | S3 | **Fixed** — `ellipsize()` helper |
 | BB-05 | Compose | Recipient `nobody` (no @) | Clear error | Error shown — OK, but message did not mention comma-separated multiple recipients | S3 | **Fixed** — message updated |
 | BB-06 | Send | KM reachable, SMTP password wrong, Level 2 | Clear error, key not wasted | Error shown; key is **burned** (by design – never reuse a key from a failed send) so one key lost per failed attempt | S3 | Accepted — documented in `OTP_KEY_REUSE_REVIEW.md`; login pre-check (SCRUM-63) prevents most cases |
-| BB-07 | Receive | Open mail sent under a *different* KM key bank | Message says which KM / key id is missing | "Integrity check failed" / "key not found" — technically right, confusing for a user | S2 | Open → wording improved in a later ticket (SCRUM-69 polish); runbook: always run one KM for both sides |
+| BB-07 | Receive | Open mail sent under a *different* KM key bank | Message says which KM / key id is missing | "Integrity check failed" / "key not found" — technically right, confusing for a user | S2 | **Fixed** (SCRUM-67) — key fingerprint in envelope → `KeyMismatch` with clear "same Key Manager" message; see `docs/crypto/KEY_FINGERPRINT.md` |
 | BB-08 | Packaging | Rebuilt exe after a code change, old `dist` still used | New behaviour | Old behaviour (stale exe) | S3 | Not a bug — `BUILD_EXE.md` now says "re-run build_exe.bat after every change" |
 | BB-09 | Receive / AV | Leave inbox idle 10 min with Avast Mail Shield on | Refresh works | IMAP connection dropped; first refresh shows an error, second works | S2 | Known (SCRUM-63 edge-case E11): auto-reconnect on refresh already in place; demo note: disable Mail Shield |
 | BB-10 | Send / AV | Level 3 with 2 MB attachment, Avast on | Sent | SMTP upload killed by AV scan | S2 | Known (E12): attachment limit + 180 s timeout; AV off for demo |
@@ -36,7 +36,7 @@ Severity: **S1** blocks a core flow · **S2** wrong behaviour, workaround exists
 | Fixed in this ticket (PR) | 5 (BB-01…05) |
 | Already fixed / verified | 5 (BB-11…16 minus open) |
 | Known, documented workaround | 3 (BB-06, BB-09, BB-10) |
-| Open, carried to polish ticket | 1 (BB-07) |
+| Fixed in SCRUM-67 (crypto/KM) | 1 (BB-07) |
 
 ## Tests added
 `tests/test_ui_helpers.py`: `test_ellipsize_adds_visible_ellipsis`, `test_parse_recipients_splits_and_validates`.
