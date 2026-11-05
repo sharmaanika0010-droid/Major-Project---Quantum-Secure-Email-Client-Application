@@ -122,7 +122,7 @@ def parse_envelope(text: str) -> Envelope:
         raise QuMailCryptoError("envelope is missing Key-ID or Nonce")
     try:
         nonce = base64.b64decode(headers["nonce"], validate=True)
-        ct = base64.b64decode("".join(l.strip() for l in lines[i:]), validate=True)
+        ct = base64.b64decode("".join(line.strip() for line in lines[i:]), validate=True)
     except ValueError:
         raise QuMailCryptoError("envelope contains invalid base64") from None
     return Envelope(headers["key-id"], nonce, ct,

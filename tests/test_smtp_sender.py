@@ -1,14 +1,14 @@
 import unittest
-from unittest.mock import patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
-from src.email.smtp_sender import send_email
+from src.email_service.smtp_sender import send_email
 
 
 class TestSmtpSender(unittest.TestCase):
 
-    @patch("src.email.smtp_sender.smtplib.SMTP")
+    @patch("src.email_service.smtp_sender.smtplib.SMTP")
     @patch.dict("os.environ", {
         "SMTP_USER": "sender@example.com",
         "SMTP_PASSWORD": "test-password",
@@ -29,7 +29,7 @@ class TestSmtpSender(unittest.TestCase):
         server.login.assert_called_once()
         server.send_message.assert_called_once()
 
-    @patch("src.email.smtp_sender.smtplib.SMTP")
+    @patch("src.email_service.smtp_sender.smtplib.SMTP")
     @patch.dict("os.environ", {
         "SMTP_USER": "sender@example.com",
         "SMTP_PASSWORD": "test-password",

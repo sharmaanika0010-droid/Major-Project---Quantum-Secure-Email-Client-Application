@@ -1,16 +1,43 @@
-/.idea
-/.venv
-.env
-/__pycache__
-.ipynb_checkpoints
-*.iml
-
-*.pyc
-src/km_simulator/keybank.csv
-=======
-
+# Python
 __pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+*.iml
+.ipynb_checkpoints
 
-src/email/*.backup
+# Secrets / local config
+.env
+*.local
+credentials.json
+token.json
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# PyInstaller (build output only — packaging/*.spec is versioned)
+build/
+dist/
+*.spec
+!packaging/*.spec
+
+# KM simulator state (contains key material, changes on every send)
+SCRUM_Works/SCRUM-14/keybank.csv
+src/km_simulator/keybank.csv
+
+# test / coverage output
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+src/email_service/*.backup
 tests/*.backup
-
+reports/

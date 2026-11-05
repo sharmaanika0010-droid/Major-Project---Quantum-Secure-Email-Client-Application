@@ -41,8 +41,10 @@ class KMClient:
         data = json.dumps(body).encode() if body is not None else None
         req = urllib.request.Request(self.base_url + path, data=data, method=method,
                                      headers={"Content-Type": "application/json"})
+        if not self.base_url.startswith(("http://", "https://")):
+            raise ValueError(f"KM URL must be http(s): {self.base_url}")
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # scheme validated above # nosec B310
                 return json.loads(resp.read())
         except urllib.error.HTTPError as e:
             try:

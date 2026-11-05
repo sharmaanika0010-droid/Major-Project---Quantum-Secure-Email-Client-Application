@@ -1,0 +1,7 @@
+line-length = 120
+target-version = "py311"
+extend-exclude = ["SCRUM_Works", "km_simulator", "SVVV_Documentation", "docs"]
+
+[lint]
+select = ["E", "F", "W", "I", "B"]
+ignore = ["E501"]   # long lines allowed (GUI strings)

@@ -1,0 +1,118 @@
+# QuMail CI — SCRUM-40 (unit) + SCRUM-45 (integration + coverage report)
+name: CI
+
+on:
+  push:
+    branches: [main, develop, "feature/**", "chore/**"]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  static-analysis:
+    name: Static analysis (ruff + bandit + pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Lint (ruff)
+        run: ruff check src tests --output-format=github
+      - name: Security scan (bandit)
+        run: bandit -c bandit.yaml -r src -f txt
+      - name: Dependency vulnerabilities (pip-audit)
+        run: pip-audit -r requirements.txt --progress-spinner off
+
+  test:
+    name: Unit tests (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Lint (ruff)
+        run: ruff check src tests --output-format=github
+      - name: Unit tests
+        run: pytest -q -m "not integration and not live"
+
+  integration:
+    name: Integration (KM simulator) + coverage
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Unit + integration tests with coverage
+        run: pytest -q -m "not live" --cov --cov-report=term-missing --cov-report=html --cov-report=xml
+      - name: Coverage summary in job page
+        run: |
+          echo '## Coverage' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          coverage report >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: Upload coverage report (HTML)
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            htmlcov
+            coverage.xml
+
+  windows-exe:
+    name: Windows exe (PyInstaller)
+    runs-on: windows-latest
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') || startsWith(github.head_ref, 'feature/SCRUM-62')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Build with PyInstaller
+        run: python -m PyInstaller packaging/qumail.spec --noconfirm --clean
+      - name: Smoke test (exe starts, KM answers)
+        shell: pwsh
+        run: |
+          $km = Start-Process -FilePath dist/QuMail-KM/QuMail-KM.exe -PassThru
+          Start-Sleep -Seconds 8
+          $r = Invoke-RestMethod http://127.0.0.1:5000/keys/status
+          "KM status: $($r | ConvertTo-Json -Compress)"
+          if ($r.total -ne 100) { throw "unexpected key bank" }
+          Stop-Process -Id $km.Id -Force
+          if (-not (Test-Path dist/QuMail/QuMail.exe)) { throw "client exe missing" }
+      - name: Package
+        shell: pwsh
+        run: |
+          Copy-Item packaging/START_QUMAIL.bat, packaging/README_DIST.txt dist/
+          Compress-Archive -Path dist/* -DestinationPath QuMail-windows-x64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QuMail-windows-x64
+          path: QuMail-windows-x64.zip

@@ -1,0 +1,266 @@
+"""Inbox: message list (left) + reader pane with body and attachments (right).
+
+SCRUM-16 (Day 3): list of newest messages.
+SCRUM-24 (Day 6): inbox rendering, attachment download + preview.
+SCRUM-28 (Day 7): Compose button, Level 1 receive path through qumail.crypto.envelope.
+Day 8/9: Level 2/3 decrypt via qumail.crypto.pipeline (key by key_id from KM).
+Day 10 (SCRUM-39): KM key-bank indicator, depletion warning, consumed-key error.
+"""
+from __future__ import annotations
+
+import io
+import threading
+from tkinter import filedialog, messagebox
+
+import customtkinter as ctk
+
+from qumail import audit
+from qumail.audit import get_audit
+from qumail.contacts import get_book
+from qumail.crypto import envelope, pipeline
+from qumail.email.imap_client import Attachment, EmailMessage, IMAPClient
+from qumail.email.smtp_client import SMTPClient
+from qumail.gui.audit_view import AuditWindow
+from qumail.gui.compose import ComposeWindow
+from qumail.gui.contacts import ContactsWindow
+from qumail.gui.ui import (
+    BTN_PRIMARY,
+    BTN_SECONDARY,
+    FONT,
+    FONT_SMALL,
+    FONT_TITLE,
+    bind_dialog_keys,
+    center_on_parent,
+    ellipsize,
+    friendly_date,
+    friendly_sender,
+)
+from qumail.km.client import KMClient, KMError
+
+LEVEL_COLORS = {1: ("gray70", "gray40"), 2: "#2e86de", 3: "#8e44ad", 4: "#c0392b"}
+LEVEL_NAMES = {1: "Plain", 2: "L2 · Quantum AES", 3: "L3 · One-Time Pad", 4: "L4 · Double layer"}
+PREVIEW_TEXT_TYPES = ("text/plain", "text/csv", "text/markdown", "application/json")
+PREVIEW_IMAGE_TYPES = ("image/png", "image/jpeg", "image/gif", "image/bmp", "image/webp")
+
+
+class InboxFrame(ctk.CTkFrame):
+    def __init__(self, master, client: IMAPClient, smtp: SMTPClient, km: KMClient, on_logout):
+        super().__init__(master, fg_color="transparent")
+        self.client = client
+        self.smtp = smtp
+        self.km = km
+        self.current: EmailMessage | None = None
+
+        # -- top bar ----------------------------------------------------
+        top = ctk.CTkFrame(self, fg_color="transparent")
+        top.pack(fill="x", padx=16, pady=(12, 6))
+        ctk.CTkLabel(top, text=f"Inbox — {client.address}", font=FONT_TITLE).pack(side="left")
+        # SCRUM-60: one primary action, secondary actions grouped with equal widths; tooltips via shortcut hints
+        ctk.CTkButton(top, text="Logout", width=90, **BTN_SECONDARY, command=on_logout).pack(side="right")
+        ctk.CTkButton(top, text="Refresh  F5", width=100, command=self.refresh).pack(side="right", padx=(6, 10))
+        ctk.CTkButton(top, text="📜 Audit", width=90, **BTN_SECONDARY,
+                      command=lambda: AuditWindow(self, get_audit())).pack(side="right", padx=3)
+        ctk.CTkButton(top, text="📒 Contacts", width=100, **BTN_SECONDARY,
+                      command=lambda: ContactsWindow(self, get_book())).pack(side="right", padx=3)
+        ctk.CTkButton(top, text="✉ Compose  Ctrl+N", width=150, **BTN_PRIMARY,
+                      command=self.compose).pack(side="right", padx=(10, 3))
+        self.km_lbl = ctk.CTkLabel(top, text="🔑 KM…", text_color="gray", font=FONT)
+        self.km_lbl.pack(side="right", padx=10)
+        self.status = ctk.CTkLabel(self, text="Loading…", text_color="gray")
+        self.status.pack(anchor="w", padx=16)
+
+        # -- two panes --------------------------------------------------
+        body = ctk.CTkFrame(self, fg_color="transparent")
+        body.pack(fill="both", expand=True, padx=16, pady=10)
+        body.grid_columnconfigure(0, weight=2, minsize=300)
+        body.grid_columnconfigure(1, weight=3, minsize=340)
+        body.grid_rowconfigure(0, weight=1)
+
+        self.list = ctk.CTkScrollableFrame(body, label_text="Messages")
+        self.list.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+        self.reader = ctk.CTkFrame(body)
+        self.reader.grid(row=0, column=1, sticky="nsew")
+        self._build_reader()
+        self.refresh()
+
+    # ------------------------------------------------------------------
+    # message list
+    # ------------------------------------------------------------------
+    def refresh(self):
+        for w in self.list.winfo_children():
+            w.destroy()
+        self.status.configure(text="Loading…")
+        self._refresh_km()
+
+        def work():
+            try:
+                items = self.client.fetch_inbox(limit=25)
+            except Exception as exc:  # noqa: BLE001 - never leave the UI stuck on "Loading…"
+                self.after(0, lambda e=exc: self.status.configure(text=f"Error: {e} — press Refresh"))
+                return
+            self.after(0, self._render_list, items)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _refresh_km(self):
+        def work():
+            try:
+                st = self.km.status()
+                a, t = int(st.get("available", 0)), int(st.get("total", 0))
+                if a == 0:
+                    txt, col = f"🔑 Key bank EMPTY (0/{t}) — only Level 1 possible", "#e74c3c"
+                elif a <= 10:
+                    txt, col = f"🔑 {a}/{t} keys left — running low", "#f39c12"
+                else:
+                    txt, col = f"🔑 {a}/{t} quantum keys", "#2ecc71"
+            except KMError:
+                txt, col = "🔑 KM offline — encrypted mail cannot be sent/opened", "#e74c3c"
+            self.after(0, lambda: self.km_lbl.configure(text=txt, text_color=col))
+        threading.Thread(target=work, daemon=True).start()
+
+    def _render_list(self, items):
+        self.status.configure(text=f"{len(items)} messages (newest first) — click a message to read it")
+        for m in items:
+            # BB-01: a CTkButton centres multi-line text, so sender/subject looked misaligned.
+            # Use a frame with two left-anchored labels and make the whole row clickable.
+            row = ctk.CTkFrame(self.list, height=52, corner_radius=6, fg_color=("gray90", "gray20"), cursor="hand2")
+            row.pack(fill="x", pady=2)
+            row.pack_propagate(False)
+            sender_lbl = ctk.CTkLabel(row, text=ellipsize(friendly_sender(m.sender), 30), font=FONT, anchor="w", text_color=("black", "white"))
+            sender_lbl.place(x=10, y=5, relwidth=0.72)
+            subj_lbl = ctk.CTkLabel(row, text=ellipsize(m.subject or "(no subject)", 48), font=FONT_SMALL, anchor="w", text_color=("gray25", "gray75"))
+            subj_lbl.place(x=10, y=27, relwidth=0.72)
+            for w in (row, sender_lbl, subj_lbl):
+                w.bind("<Button-1>", lambda _e, uid=m.uid: self.open_message(uid))
+                w.bind("<Enter>", lambda _e, r=row: r.configure(fg_color=("gray80", "gray30")))
+                w.bind("<Leave>", lambda _e, r=row: r.configure(fg_color=("gray90", "gray20")))
+            badge = f"L{m.level}" if m.level > 1 else ""
+            if m.has_attachments:
+                badge = ("📎 " + badge).strip()
+            if badge:
+                ctk.CTkLabel(row, text=badge, width=44, height=20, corner_radius=10, font=("Segoe UI", 10, "bold"),
+                             fg_color=LEVEL_COLORS.get(m.level, "gray"), text_color="white").place(relx=1.0, x=-8, y=6, anchor="ne")
+            ctk.CTkLabel(row, text=friendly_date(m.date, with_time=False), font=FONT_SMALL, text_color="gray").place(relx=1.0, x=-8, y=30, anchor="ne")
+
+    # ------------------------------------------------------------------
+    # reader pane
+    # ------------------------------------------------------------------
+    def _build_reader(self):
+        r = self.reader
+        self.r_subject = ctk.CTkLabel(r, text="Select a message", font=("Segoe UI", 15, "bold"), anchor="w", wraplength=460, justify="left")
+        self.r_subject.pack(fill="x", padx=12, pady=(10, 2))
+        meta = ctk.CTkFrame(r, fg_color="transparent")
+        meta.pack(fill="x", padx=12)
+        self.r_meta = ctk.CTkLabel(meta, text="", anchor="w", justify="left", text_color="gray", font=("Segoe UI", 11))
+        self.r_meta.pack(side="left", fill="x", expand=True)
+        self.r_level = ctk.CTkLabel(meta, text="", corner_radius=10, width=120, height=22, font=("Segoe UI", 10, "bold"), text_color="white")
+        self.r_level.pack(side="right")
+
+        self.r_body = ctk.CTkTextbox(r, wrap="word", font=("Segoe UI", 12))
+        self.r_body.pack(fill="both", expand=True, padx=12, pady=8)
+        self.r_body.configure(state="disabled")
+
+        self.r_attach = ctk.CTkFrame(r, fg_color="transparent")
+        self.r_attach.pack(fill="x", padx=12, pady=(0, 10))
+
+    def open_message(self, uid: str):
+        self._set_body("Loading…")
+        self.r_subject.configure(text="Loading…")
+
+        def work():
+            try:
+                msg = self.client.fetch_message(uid)
+            except Exception as exc:  # noqa: BLE001
+                self.after(0, lambda e=exc: self._set_body(f"Error: {e}\n\nPress Refresh and try again."))
+                return
+            note = None
+            if msg.level >= 2:
+                try:
+                    note = pipeline.open_message(msg, self.km)
+                except (KMError, envelope.QuMailCryptoError) as exc:
+                    note = f"🔒 Cannot decrypt: {exc}"
+                    audit.log("decrypt_failed", level=msg.level, key_id=msg.key_id, error=str(exc)[:120])
+                    msg.level = -msg.level  # mark as failed for the renderer
+            self.after(0, self._render_message, msg, note)
+
+        threading.Thread(target=work, daemon=True).start()
+
+    def _render_message(self, msg: EmailMessage, note: str | None = None):
+        self.current = msg
+        failed = msg.level < 0
+        level = abs(msg.level)
+        self.r_subject.configure(text=msg.subject)
+        self.r_meta.configure(text=f"From: {msg.sender}\nTo: {msg.to}\nDate: {friendly_date(msg.date)}")
+        self.r_level.configure(text=LEVEL_NAMES.get(level, f"L{level}"), fg_color=LEVEL_COLORS.get(level, "gray"))
+
+        if failed:
+            text = f"{note}\n\n--- raw envelope ---\n{msg.body}"
+        elif level == 1:
+            text = envelope.decrypt(1, msg.body)
+        else:
+            text = f"{note}\n\n{msg.body}"
+        self._set_body(text)
+
+        for w in self.r_attach.winfo_children():
+            w.destroy()
+        if msg.attachments:
+            ctk.CTkLabel(self.r_attach, text=f"Attachments ({len(msg.attachments)})", font=("Segoe UI", 12, "bold"), anchor="w").pack(fill="x")
+            for att in msg.attachments:
+                row = ctk.CTkFrame(self.r_attach, fg_color=("gray90", "gray20"), corner_radius=6)
+                row.pack(fill="x", pady=2)
+                ctk.CTkLabel(row, text=f"📎 {att.filename}  ({att.size_kb} KB · {att.content_type})", anchor="w").pack(side="left", padx=8, fill="x", expand=True)
+                ctk.CTkButton(row, text="Download", width=84, command=lambda a=att: self.download(a)).pack(side="right", padx=(4, 6), pady=4)
+                ctk.CTkButton(row, text="Preview", width=74, fg_color="gray50", command=lambda a=att: self.preview(a)).pack(side="right", pady=4)
+
+    def compose(self):
+        ComposeWindow(self, self.smtp, self.km, on_sent=lambda _id, lvl: self.status.configure(text=f"Message sent (Level {lvl}) — press Refresh to see it in Sent/Inbox"))
+
+    def _set_body(self, text: str):
+        self.r_body.configure(state="normal")
+        self.r_body.delete("1.0", "end")
+        self.r_body.insert("1.0", text)
+        self.r_body.configure(state="disabled")
+
+    # ------------------------------------------------------------------
+    # attachments
+    # ------------------------------------------------------------------
+    def download(self, att: Attachment):
+        path = filedialog.asksaveasfilename(title="Save attachment", initialfile=att.filename)
+        if not path:
+            return
+        try:
+            with open(path, "wb") as fh:
+                fh.write(att.data)
+        except OSError as exc:
+            messagebox.showerror("QuMail", f"Could not save file:\n{exc}")
+            return
+        self.status.configure(text=f"Saved {att.filename} → {path}")
+
+    def preview(self, att: Attachment):
+        ctype = att.content_type.lower()
+        win = ctk.CTkToplevel(self)
+        win.title(f"Preview — {att.filename}")
+        center_on_parent(win, self.winfo_toplevel(), 640, 520)
+        bind_dialog_keys(win, win.destroy)
+        win.after(100, win.lift)
+
+        if ctype in PREVIEW_IMAGE_TYPES:
+            try:
+                from PIL import Image  # Pillow ships with customtkinter
+                img = Image.open(io.BytesIO(att.data))
+                img.thumbnail((600, 460))
+                photo = ctk.CTkImage(light_image=img, dark_image=img, size=img.size)
+                lbl = ctk.CTkLabel(win, image=photo, text="")
+                lbl.image = photo  # keep reference
+                lbl.pack(expand=True, padx=10, pady=10)
+            except Exception as exc:  # noqa: BLE001 - show any decode error to user
+                ctk.CTkLabel(win, text=f"Cannot preview image: {exc}").pack(pady=20)
+        elif ctype in PREVIEW_TEXT_TYPES or att.filename.lower().endswith((".txt", ".md", ".csv", ".json", ".py", ".log")):
+            box = ctk.CTkTextbox(win, wrap="none", font=("Consolas", 12))
+            box.pack(fill="both", expand=True, padx=10, pady=10)
+            box.insert("1.0", att.data[:200_000].decode("utf-8", errors="replace"))
+            box.configure(state="disabled")
+        else:
+            ctk.CTkLabel(win, text=f"No preview for {att.content_type}.\nUse Download to save and open it.",
+                         justify="center").pack(expand=True)
+            ctk.CTkButton(win, text="Download", command=lambda: self.download(att)).pack(pady=(0, 20))

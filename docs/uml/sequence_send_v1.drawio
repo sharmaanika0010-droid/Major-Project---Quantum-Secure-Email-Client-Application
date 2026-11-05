@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram name="Sequence" id="seq">
+    <mxGraphModel dx="1144" dy="624" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="LU" parent="1" style="shape=umlLifeline;participant=umlActor;perimeter=lifelinePerimeter;size=40;html=1;align=center;verticalAlign=top;spacingTop=36;fillColor=#FFFFFF;strokeColor=#333333;fontSize=11;" value="User" vertex="1">
+          <mxGeometry height="980" width="30" x="75" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="LG" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;size=40;html=1;fillColor=#DAE8FC;strokeColor=#333333;fontStyle=1;fontSize=11;" value="QuMail GUI (Compose)" vertex="1">
+          <mxGeometry height="980" width="170" x="525" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="LC" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;size=40;html=1;fillColor=#FFE6CC;strokeColor=#333333;fontStyle=1;fontSize=11;" value="Crypto Module (Level 2)" vertex="1">
+          <mxGeometry height="980" width="170" x="785" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="LK" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;size=40;html=1;fillColor=#D5E8D4;strokeColor=#333333;fontStyle=1;fontSize=11;" value="Key Manager (KM sim)" vertex="1">
+          <mxGeometry height="980" width="170" x="265" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="LS" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;size=40;html=1;fillColor=#DAE8FC;strokeColor=#333333;fontStyle=1;fontSize=11;" value="SMTP Client" vertex="1">
+          <mxGeometry height="980" width="170" x="1045" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="LP" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;size=40;html=1;fillColor=#FFF2CC;strokeColor=#333333;fontStyle=1;fontSize=11;" value="Email Provider (SMTP server)" vertex="1">
+          <mxGeometry height="980" width="170" x="1305" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="11" parent="1" style="html=1;fillColor=#DAE8FC;strokeColor=#333333;" value="" vertex="1">
+          <mxGeometry height="810" width="10" x="605" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="12" parent="1" style="html=1;fillColor=#D5E8D4;strokeColor=#333333;" value="" vertex="1">
+          <mxGeometry height="160" width="10" x="345" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="13" parent="1" style="html=1;fillColor=#FFE6CC;strokeColor=#333333;" value="" vertex="1">
+          <mxGeometry height="120" width="10" x="865" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="14" parent="1" style="html=1;fillColor=#DAE8FC;strokeColor=#333333;" value="" vertex="1">
+          <mxGeometry height="150" width="10" x="1125" y="700" as="geometry" />
+        </mxCell>
+        <mxCell id="15" parent="1" style="html=1;fillColor=#FFF2CC;strokeColor=#333333;" value="" vertex="1">
+          <mxGeometry height="50" width="10" x="1385" y="740" as="geometry" />
+        </mxCell>
+        <mxCell id="16" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="1. compose(to, subject, body, files), Level 2, Send">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="95" y="120" as="sourcePoint" />
+            <mxPoint x="605" y="120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="17" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;edgeStyle=none;rounded=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="655" y="140" />
+              <mxPoint x="655" y="162" />
+            </Array>
+            <mxPoint x="615" y="140" as="sourcePoint" />
+            <mxPoint x="615" y="162" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="18" parent="1" style="text;html=1;whiteSpace=wrap;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;" value="2. validate inputs; plaintext = body + attachments" vertex="1">
+          <mxGeometry height="30" width="185" x="661" y="136" as="geometry" />
+        </mxCell>
+        <mxCell id="19" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="3. request_key(level=2, 32 bytes)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="605" y="190" as="sourcePoint" />
+            <mxPoint x="355" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="20" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;width=40;height=22;fontStyle=1;fontSize=10;strokeColor=#666666;fillColor=none;" value="alt" vertex="1">
+          <mxGeometry height="170" width="680" x="40" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="21" parent="1" style="text;html=1;fontSize=10;fontStyle=2;align=left;" value="[key available]" vertex="1">
+          <mxGeometry height="18" width="300" x="90" y="217" as="geometry" />
+        </mxCell>
+        <mxCell id="22" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;strokeColor=#666666;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="40" y="300" as="sourcePoint" />
+            <mxPoint x="720" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="23" parent="1" style="text;html=1;fontSize=10;fontStyle=2;align=left;" value="[no key available]" vertex="1">
+          <mxGeometry height="18" width="300" x="50" y="302" as="geometry" />
+        </mxCell>
+        <mxCell id="24" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;edgeStyle=none;rounded=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="395" y="235" />
+              <mxPoint x="395" y="257" />
+            </Array>
+            <mxPoint x="355" y="235" as="sourcePoint" />
+            <mxPoint x="355" y="257" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="25" parent="1" style="text;html=1;whiteSpace=wrap;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;" value="4. allocate next UNUSED key; mark CONSUMED" vertex="1">
+          <mxGeometry height="30" width="185" x="401" y="231" as="geometry" />
+        </mxCell>
+        <mxCell id="26" edge="1" parent="1" style="html=1;endArrow=open;dashed=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="5. key_material, key_id">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="355" y="280" as="sourcePoint" />
+            <mxPoint x="605" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="27" edge="1" parent="1" style="html=1;endArrow=open;dashed=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="5b. error: no keys available">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="355" y="325" as="sourcePoint" />
+            <mxPoint x="605" y="325" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="28" edge="1" parent="1" style="html=1;endArrow=open;dashed=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="5c. show &#39;No quantum keys available&#39;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="605" y="360" as="sourcePoint" />
+            <mxPoint x="95" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="29" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="6. encrypt_level2(plaintext, key_material)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="615" y="420" as="sourcePoint" />
+            <mxPoint x="865" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="30" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;edgeStyle=none;rounded=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="915" y="440" />
+              <mxPoint x="915" y="462" />
+            </Array>
+            <mxPoint x="875" y="440" as="sourcePoint" />
+            <mxPoint x="875" y="462" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="31" parent="1" style="text;html=1;whiteSpace=wrap;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;" value="7. aes_key = HKDF-SHA256(key_material, 32)" vertex="1">
+          <mxGeometry height="30" width="185" x="921" y="436" as="geometry" />
+        </mxCell>
+        <mxCell id="32" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;edgeStyle=none;rounded=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="915" y="480" />
+              <mxPoint x="915" y="502" />
+            </Array>
+            <mxPoint x="875" y="480" as="sourcePoint" />
+            <mxPoint x="875" y="502" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="33" parent="1" style="text;html=1;whiteSpace=wrap;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;" value="8. nonce = random(12 bytes)" vertex="1">
+          <mxGeometry height="30" width="185" x="921" y="476" as="geometry" />
+        </mxCell>
+        <mxCell id="34" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;edgeStyle=none;rounded=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="915" y="520" />
+              <mxPoint x="915" y="542" />
+            </Array>
+            <mxPoint x="875" y="520" as="sourcePoint" />
+            <mxPoint x="875" y="542" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="35" parent="1" style="text;html=1;whiteSpace=wrap;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;" value="9. AES-256-GCM encrypt → ciphertext, tag" vertex="1">
+          <mxGeometry height="30" width="185" x="921" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="36" edge="1" parent="1" style="html=1;endArrow=open;dashed=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="10. ciphertext, nonce, tag">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="865" y="580" as="sourcePoint" />
+            <mxPoint x="615" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="37" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;edgeStyle=none;rounded=0;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="655" y="600" />
+              <mxPoint x="655" y="622" />
+            </Array>
+            <mxPoint x="615" y="600" as="sourcePoint" />
+            <mxPoint x="615" y="622" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="38" parent="1" style="text;html=1;whiteSpace=wrap;fontSize=10;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;" value="11. envelope = JSON{level, key_id, nonce, ciphertext, tag}" vertex="1">
+          <mxGeometry height="30" width="185" x="661" y="596" as="geometry" />
+        </mxCell>
+        <mxCell id="39" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="12. send(to, subject, envelope, X-QuMail-Level/KeyID headers)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="615" y="650" as="sourcePoint" />
+            <mxPoint x="1125" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="40" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="13. STARTTLS 587 / SSL 465: AUTH, MAIL FROM, RCPT TO, DATA">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1135" y="700" as="sourcePoint" />
+            <mxPoint x="1385" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="41" edge="1" parent="1" style="html=1;endArrow=open;dashed=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="14. 250 OK (message queued)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1385" y="760" as="sourcePoint" />
+            <mxPoint x="1135" y="760" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="42" edge="1" parent="1" style="html=1;endArrow=open;dashed=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="15. sent = True, message_id">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1125" y="800" as="sourcePoint" />
+            <mxPoint x="615" y="800" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="43" edge="1" parent="1" style="html=1;endArrow=block;endFill=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="16. log_key_usage(key_id, message_id, level=2)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="605" y="840" as="sourcePoint" />
+            <mxPoint x="355" y="840" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="44" edge="1" parent="1" style="html=1;endArrow=open;dashed=1;strokeColor=#333333;fontSize=10;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="17. show &#39;Sent securely (Level 2)&#39;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="605" y="890" as="sourcePoint" />
+            <mxPoint x="95" y="890" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="45" parent="1" style="shape=note;whiteSpace=wrap;html=1;size=12;fillColor=#FFFFCC;strokeColor=#999999;fontSize=9;align=left;spacing=4;" value="Level 2 = Quantum-aided AES. Quantum key from KM is used as key material; HKDF derives the AES-256 key. Key is used once (KM marks CONSUMED)." vertex="1">
+          <mxGeometry height="80" width="190" x="1230" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="46" parent="1" style="shape=note;whiteSpace=wrap;html=1;size=12;fillColor=#FFFFCC;strokeColor=#999999;fontSize=9;align=left;spacing=4;" value="Envelope travels as the mail body (text/plain, base64). Receiver reads X-QuMail-KeyID header to fetch the same key from KM (see Day 6 receive diagram)." vertex="1">
+          <mxGeometry height="80" width="190" x="1230" y="560" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
