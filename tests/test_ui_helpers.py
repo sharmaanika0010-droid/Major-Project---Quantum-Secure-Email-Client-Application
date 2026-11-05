@@ -23,3 +23,20 @@ def test_friendly_sender():
 
 def test_dpi_helper_is_noop_off_windows():
     ui.enable_windows_dpi()        # must never raise, on any OS
+
+
+# ---- bug bash (SCRUM-66) ---------------------------------------------------
+from qumail.gui.ui import ellipsize, parse_recipients  # noqa: E402
+
+
+def test_ellipsize_adds_visible_ellipsis():
+    assert ellipsize("short", 10) == "short"
+    assert ellipsize("a" * 50, 10).endswith("…") and len(ellipsize("a" * 50, 10)) == 10
+    assert ellipsize("", 5) == ""
+
+
+def test_parse_recipients_splits_and_validates():
+    assert parse_recipients("a@x.com") == ["a@x.com"]
+    assert parse_recipients(" a@x.com , b@y.com;a@x.com ") == ["a@x.com", "b@y.com"]
+    for bad in ("", "nobody", "a@", "@x.com", "a@x.com, nobody", "a b@x.com"):
+        assert parse_recipients(bad) == [], bad

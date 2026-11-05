@@ -17,7 +17,7 @@ from qumail.contacts import get_book
 from qumail.crypto import envelope, limits, pipeline
 from qumail.email.smtp_client import SMTPClient, SMTPError
 from qumail.gui.contacts import ContactsWindow
-from qumail.gui.ui import BTN_PRIMARY, BTN_SECONDARY, bind_dialog_keys, center_on_parent
+from qumail.gui.ui import BTN_PRIMARY, BTN_SECONDARY, bind_dialog_keys, center_on_parent, parse_recipients
 from qumail.km.client import KMClient, KMError, KMUnreachable, NoKeysAvailable
 
 
@@ -194,8 +194,14 @@ class ComposeWindow(ctk.CTkToplevel):
         text = self.body.get("1.0", "end").strip()
         level = self._level_by_label[self.level.get()]
         hybrid = level == 3 and bool(self.hybrid.get())
-        if not to or "@" not in to:
-            self.status.configure(text="Enter a valid recipient", text_color="#e74c3c")
+        recipients = parse_recipients(to)
+        if not recipients:
+            self.status.configure(text="Enter a valid recipient (separate several with commas)", text_color="#e74c3c")
+            return
+        to = ", ".join(recipients)
+        if not text and not self.files:
+            # BB-02: an empty mail at Level 2–4 would still reserve (and waste) a quantum key
+            self.status.configure(text="Nothing to send — write a message or attach a file", text_color="#e74c3c")
             return
         self.send_btn.configure(state="disabled", text="Sending…")
         self.status.configure(text=f"Preparing (Level {level})…", text_color="gray")
@@ -235,10 +241,12 @@ class ComposeWindow(ctk.CTkToplevel):
 
     def _ok(self, msg_id: str, level: int):
         self.status.configure(text=f"Sent (Level {level})", text_color="#2ecc71")
-        audit.log("mail_sent", to=self.to.get().strip(), level=level, message_id=msg_id, attachments=len(self.files))
-        # auto-add recipient / remember level; a contacts-file error must never block the send UI
+        recipients = parse_recipients(self.to.get())
+        audit.log("mail_sent", to=", ".join(recipients), level=level, message_id=msg_id, attachments=len(self.files))
+        # auto-add each recipient / remember level; a contacts-file error must never block the send UI
         with contextlib.suppress(OSError, ValueError):
-            self.book.remember(self.to.get().strip(), level)
+            for r in recipients:                         # BB-03: one contact per address, not "a, b" as one entry
+                self.book.remember(r, level)
         if self.on_sent:
             self.on_sent(msg_id, level)
         self.after(900, self.destroy)
