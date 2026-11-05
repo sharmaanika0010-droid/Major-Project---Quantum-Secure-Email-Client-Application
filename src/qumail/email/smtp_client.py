@@ -26,8 +26,8 @@ class SMTPClient:
         if provider not in PROVIDERS:
             raise SMTPError(f"Unknown provider: {provider}")
         self.host = PROVIDERS[provider][1]
-        self.address = address
-        self._password = app_password
+        self.address = address.strip()
+        self._password = "".join(app_password.split())   # SCRUM-63: tolerate pasted spaces
         cfg = get_settings()
         self.timeout = timeout or cfg.smtp_timeout
         self.port = port or cfg.smtp_port
@@ -66,7 +66,8 @@ class SMTPClient:
                 s.login(self.address, self._password)
                 s.send_message(msg)
         except smtplib.SMTPAuthenticationError as exc:
-            raise SMTPError("SMTP login failed — check email / app password") from exc
+            detail = exc.smtp_error.decode(errors="replace") if isinstance(exc.smtp_error, bytes) else str(exc.smtp_error)
+            raise SMTPError(f"SMTP login failed: {detail}") from exc
         except (smtplib.SMTPException, OSError) as exc:
             raise SMTPError(f"Send failed: {exc}") from exc
         return msg["Message-ID"]
