@@ -98,13 +98,20 @@ def _level_of(msg) -> int:
         return 1
 
 
+def _imap_reply(exc: BaseException) -> str:
+    arg = exc.args[0] if exc.args else exc
+    if isinstance(arg, bytes):
+        arg = arg.decode(errors="replace")
+    return str(arg)
+
+
 class IMAPClient:
     def __init__(self, provider: str, address: str, app_password: str):
         if provider not in PROVIDERS:
             raise IMAPError(f"Unknown provider: {provider}")
         self.host = PROVIDERS[provider][0]
-        self.address = address
-        self._password = app_password
+        self.address = address.strip()
+        self._password = "".join(app_password.split())   # SCRUM-63: pasted app password may contain spaces
         self._conn: imaplib.IMAP4_SSL | None = None
 
     # -- connection -----------------------------------------------------
@@ -113,7 +120,8 @@ class IMAPClient:
             self._conn = imaplib.IMAP4_SSL(self.host, 993)
             self._conn.login(self.address, self._password)
         except imaplib.IMAP4.error as exc:
-            raise IMAPError("Login failed — check email / app password") from exc
+            # SCRUM-63: keep the server's reply — auth_help maps it to a human sentence
+            raise IMAPError(f"Login failed: {_imap_reply(exc)}") from exc
         except OSError as exc:
             raise IMAPError(f"Cannot reach {self.host}: {exc}") from exc
 

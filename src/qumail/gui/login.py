@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 import threading
+import webbrowser
 from typing import Callable
 
 import customtkinter as ctk
 
 from qumail import audit
 from qumail.config import get_settings
+from qumail.email import auth_help
 from qumail.email.imap_client import PROVIDERS, IMAPClient, IMAPError
 from qumail.email.smtp_client import SMTPClient
 from qumail.km.client import KMClient, KMError
@@ -52,8 +54,13 @@ class LoginFrame(ctk.CTkFrame):
         self.show_btn = ctk.CTkButton(row, text="show", width=50, fg_color="transparent",
                                       text_color=("#1f6feb", "#58a6ff"), command=self._toggle_pw)
         self.show_btn.pack(side="left", padx=(6, 0))
-        ctk.CTkLabel(form, text="How to create an app password?", text_color=("#1f6feb", "#58a6ff"),
-                     font=("Segoe UI", 11), anchor="w").pack(fill="x", pady=(0, 12))
+        self.help_lbl = ctk.CTkLabel(form, text="How to create an app password?", text_color=("#1f6feb", "#58a6ff"),
+                                     font=("Segoe UI", 11, "underline"), anchor="w", cursor="hand2")
+        self.help_lbl.pack(fill="x", pady=(0, 12))
+        self.help_lbl.bind("<Button-1>", lambda _e: self._open_help())
+        self._help_url = None
+        # SCRUM-63: typing a gmail/yahoo address selects the matching provider automatically
+        self.email.bind("<FocusOut>", lambda _e: self._sync_provider())
 
         ctk.CTkLabel(form, text="Key Manager URL", anchor="w").pack(fill="x")
         row2 = ctk.CTkFrame(form, fg_color="transparent")
@@ -99,12 +106,25 @@ class LoginFrame(ctk.CTkFrame):
         self.password.configure(show="•" if showing else "")
         self.show_btn.configure(text="show" if showing else "hide")
 
+    def _open_help(self):
+        webbrowser.open(self._help_url or auth_help.HELP_URLS.get(self.provider.get(), auth_help.HELP_URLS["Gmail"]))
+
+    def _sync_provider(self):
+        guessed = auth_help.provider_for_address(self.email.get())
+        if guessed and guessed in PROVIDERS:
+            self.provider.set(guessed)
+
     def _login(self):
         addr = self.email.get().strip()
-        pwd = self.password.get().strip()
+        pwd = auth_help.normalize_app_password(self.password.get())
         prov = self.provider.get()
-        if not addr or not pwd:
-            self.error.configure(text="Please enter email and app password")
+        advice = auth_help.precheck(prov, addr, pwd)
+        if advice:
+            self._help_url = advice.help_url
+            guessed = auth_help.provider_for_address(addr)
+            if guessed and guessed != prov and guessed in PROVIDERS:
+                self.provider.set(guessed)             # fix it for them and let them press Sign in again
+            self.error.configure(text=advice.message)
             return
         self.error.configure(text="")
         self.sign_in.configure(state="disabled", text="Signing in…")
@@ -114,7 +134,9 @@ class LoginFrame(ctk.CTkFrame):
             try:
                 client.connect()
             except IMAPError as exc:
-                self.after(0, self._fail, str(exc))
+                advice = auth_help.explain_login_error(prov, str(exc), pwd)
+                self._help_url = advice.help_url
+                self.after(0, self._fail, advice.message)
                 return
             cfg = get_settings()
             self.after(0, self._ok, client, SMTPClient(prov, addr, pwd),
