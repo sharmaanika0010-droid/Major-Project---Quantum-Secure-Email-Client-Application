@@ -1,6 +1,5 @@
 @echo off
-REM Starts the Key Manager simulator in its own window, then the QuMail client.
+REM Optional launcher kept for compatibility. QuMail.exe now starts the Key Manager by itself;
+REM double-clicking QuMail\QuMail.exe (or the Desktop shortcut) is all that is needed.
 cd /d "%~dp0"
-start "QuMail Key Manager (port 5000)" "%~dp0QuMail-KM\QuMail-KM.exe"
-timeout /t 2 >nul
 start "" "%~dp0QuMail\QuMail.exe"

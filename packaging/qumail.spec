@@ -24,7 +24,7 @@ client_a = Analysis(
     [os.path.join(SRC, "qumail", "gui", "app.py")],
     pathex=[SRC],
     binaries=ctk_binaries,
-    datas=ctk_datas + [(os.path.join(ROOT, ".env.example"), ".")],
+    datas=ctk_datas + [(os.path.join(ROOT, ".env.example"), "."), (os.path.join(SPECPATH, "qumail.ico"), ".")],
     hiddenimports=ctk_hidden + [
         "qumail.crypto.level2", "qumail.crypto.level3", "qumail.crypto.level4",   # loaded dynamically by envelope.load_levels()
         "PIL._tkinter_finder",
@@ -40,7 +40,7 @@ client_exe = EXE(
     exclude_binaries=True,
     name="QuMail",
     console=False,                      # GUI app — no black console window
-    icon=None,
+    icon=os.path.join(SPECPATH, "qumail.ico"),
 )
 client_coll = COLLECT(client_exe, client_a.binaries, client_a.datas, name="QuMail")
 
@@ -52,5 +52,6 @@ km_a = Analysis(
     noarchive=False,
 )
 km_pyz = PYZ(km_a.pure)
-km_exe = EXE(km_pyz, km_a.scripts, [], exclude_binaries=True, name="QuMail-KM", console=True)
+km_exe = EXE(km_pyz, km_a.scripts, [], exclude_binaries=True, name="QuMail-KM", console=True,
+             icon=os.path.join(SPECPATH, "qumail.ico"))
 km_coll = COLLECT(km_exe, km_a.binaries, km_a.datas, name="QuMail-KM")
