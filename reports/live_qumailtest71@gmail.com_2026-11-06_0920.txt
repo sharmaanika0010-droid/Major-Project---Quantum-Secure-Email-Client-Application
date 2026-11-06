@@ -1,0 +1,14 @@
+Live regression 2026-11-06_0920 account qumailtest71@gmail.com 
+.........                                                                [100%]
+=================================== PASSES ====================================
+=========================== short test summary info ===========================
+PASSED tests/integration/test_live_email.py::test_text_only_round_trip[1]
+PASSED tests/integration/test_live_email.py::test_text_only_round_trip[2]
+PASSED tests/integration/test_live_email.py::test_text_only_round_trip[3]
+PASSED tests/integration/test_live_email.py::test_text_only_round_trip[4]
+PASSED tests/integration/test_live_email.py::test_round_trip_with_attachment[1]
+PASSED tests/integration/test_live_email.py::test_round_trip_with_attachment[2]
+PASSED tests/integration/test_live_email.py::test_round_trip_with_attachment[3]
+PASSED tests/integration/test_live_email.py::test_round_trip_with_attachment[4]
+PASSED tests/integration/test_live_email.py::test_round_trip_hybrid_level3_binary
+9 passed in 133.13s (0:02:13)

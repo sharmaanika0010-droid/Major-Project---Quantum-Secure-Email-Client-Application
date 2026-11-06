@@ -54,3 +54,15 @@ push to `develop`/`main` and uploads `QuMail-windows-x64.zip` as an artifact (Ac
 | `dist\QuMail-KM` | ≈ 15 MB (Flask) |
 | Build time | ≈ 2 min on a laptop, ≈ 4 min on the CI runner |
 | Cold start | < 1 s (one-folder) |
+
+## Desktop-app behaviour (update)
+
+- **One click.** `QuMail\QuMail.exe` now starts the Key Manager by itself when
+  `QUMAIL_KM_URL` points at this machine and nothing answers on it. The simulator runs hidden
+  (no console), logs to `%USERPROFILE%\.qumail\km.log`, and is stopped again when QuMail is
+  closed. A KM started by hand or on another PC is never touched. (`src/qumail/km_launcher.py`,
+  works the same way for `python -m qumail.gui.app` in development.)
+- **Desktop icon.** `dist\Create_Desktop_Shortcut.bat` creates a "QuMail" shortcut on the Desktop
+  with the application icon (`packaging\qumail.ico`, also embedded in both exes and the window
+  title bar).
+- `START_QUMAIL.bat` is kept only for compatibility; it just launches `QuMail.exe`.
