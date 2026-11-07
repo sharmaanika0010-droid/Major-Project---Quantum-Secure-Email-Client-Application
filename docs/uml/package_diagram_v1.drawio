@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram name="PackageDiagram" id="d1">
+    <mxGraphModel dx="1392" dy="759" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1400" pageHeight="1000" background="#FFFFFF" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="c2" parent="1" style="text;html=1;fontSize=20;fontStyle=1;align=left;" value="QuMail — Package Diagram" vertex="1">
+          <mxGeometry height="30" width="1000" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" parent="1" style="text;html=1;fontSize=11;align=left;fontColor=#666666;" value="Logical modules / subsystems and their dependencies (arrows = «import»)" vertex="1">
+          <mxGeometry height="20" width="1000" x="40" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" parent="1" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=90;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=12;fillColor=#FFF2CC;strokeColor=#D6B656;" value="qumail  (application root)" vertex="1">
+          <mxGeometry height="80" width="960" x="60" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=top;whiteSpace=wrap;fontColor=#333333;" value="app.py — entry point · km_launcher — auto-start local Key Manager · config — Settings · contacts — ContactBook · audit — AuditLog" vertex="1">
+          <mxGeometry height="34" width="940" x="70" y="136" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" parent="1" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=90;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=12;fillColor=#FFE6CC;strokeColor=#D79B00;" value="qumail.gui  «Presentation»" vertex="1">
+          <mxGeometry height="160" width="280" x="60" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=top;whiteSpace=wrap;fontColor=#333333;" value="app — QuMailApp login — LoginFrame inbox — InboxFrame compose — ComposeWindow contacts — ContactsWindow audit_view — AuditWindow ui — helpers" vertex="1">
+          <mxGeometry height="114" width="260" x="70" y="276" as="geometry" />
+        </mxCell>
+        <mxCell id="c8" parent="1" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=90;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=12;fillColor=#DAE8FC;strokeColor=#6C8EBF;" value="qumail.crypto  «Security»" vertex="1">
+          <mxGeometry height="160" width="280" x="400" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="c9" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=top;whiteSpace=wrap;fontColor=#333333;" value="envelope — CipherRegistry, Prepared level2 — Quantum AES-256-GCM level3 — One-Time Pad + HMAC level4 — Double layer pipeline — CryptoPipeline (Facade) limits — attachment limits" vertex="1">
+          <mxGeometry height="114" width="260" x="410" y="276" as="geometry" />
+        </mxCell>
+        <mxCell id="c10" parent="1" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=90;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=12;fillColor=#E1D5E7;strokeColor=#9673A6;" value="qumail.km  «Key Access»" vertex="1">
+          <mxGeometry height="160" width="280" x="740" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="c11" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=top;whiteSpace=wrap;fontColor=#333333;" value="client — KMClient, IssuedKey KMError, NoKeysAvailable, KeyConsumed, KMUnreachable  REST: /keys/status, /keys/request, /keys/&lt;id&gt;, /keys/consume" vertex="1">
+          <mxGeometry height="114" width="260" x="750" y="276" as="geometry" />
+        </mxCell>
+        <mxCell id="c12" parent="1" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=90;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=12;fillColor=#D5E8D4;strokeColor=#82B366;" value="qumail.email  «Transport»" vertex="1">
+          <mxGeometry height="140" width="280" x="60" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="c13" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=top;whiteSpace=wrap;fontColor=#333333;" value="imap_client — IMAPClient,   EmailSummary, EmailMessage, Attachment smtp_client — SMTPClient auth_help — login diagnostics" vertex="1">
+          <mxGeometry height="94" width="260" x="70" y="496" as="geometry" />
+        </mxCell>
+        <mxCell id="c14" parent="1" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=90;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=12;fillColor=#F5F5F5;strokeColor=#999999;" value="External libraries" vertex="1">
+          <mxGeometry height="140" width="280" x="400" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="c15" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=top;whiteSpace=wrap;fontColor=#333333;" value="customtkinter — GUI toolkit pycryptodome — AES-GCM, ChaCha20, HMAC requests — HTTP to Key Manager imaplib / smtplib / email — stdlib python-dotenv — settings" vertex="1">
+          <mxGeometry height="94" width="260" x="410" y="496" as="geometry" />
+        </mxCell>
+        <mxCell id="c16" parent="1" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=90;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=12;fillColor=#E1D5E7;strokeColor=#9673A6;" value="km_simulator  «Separate process»" vertex="1">
+          <mxGeometry height="140" width="280" x="740" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="c17" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=top;whiteSpace=wrap;fontColor=#333333;" value="km_simulator.py — Flask REST service keybank.csv — 100 × 1 KB quantum keys States: AVAILABLE → RESERVED → CONSUMED  Started by qumail.km_launcher" vertex="1">
+          <mxGeometry height="94" width="260" x="750" y="496" as="geometry" />
+        </mxCell>
+        <mxCell id="c18" parent="1" style="shape=folder;fontStyle=1;spacingTop=10;tabWidth=90;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;align=center;verticalAlign=top;fontSize=12;fillColor=#F8CECC;strokeColor=#B85450;" value="tests  (pytest — unit + integration)" vertex="1">
+          <mxGeometry height="80" width="960" x="60" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="c19" parent="1" style="text;html=1;fontSize=10;align=left;verticalAlign=top;whiteSpace=wrap;fontColor=#333333;" value="test_crypto_* · test_km_client · test_pipeline · test_imap/smtp · test_contacts · test_audit · test_config · test_km_launcher · integration/test_live_email (skipped without creds)" vertex="1">
+          <mxGeometry height="34" width="940" x="70" y="696" as="geometry" />
+        </mxCell>
+        <mxCell id="c20" edge="1" parent="1" source="c6" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="c8" value="«import»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c21" edge="1" parent="1" source="c6" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="c12" value="«import»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c22" edge="1" parent="1" source="c6" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;exitX=0.3;exitY=0;entryX=0.7;entryY=0;" target="c10" value="«import»">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="144" y="220" />
+              <mxPoint x="936" y="220" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c23" edge="1" parent="1" source="c8" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="c10" value="«import»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c24" edge="1" parent="1" source="c12" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" target="c14" value="«import»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c25" edge="1" parent="1" source="c8" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="c14" value="«import»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c26" edge="1" parent="1" source="c6" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;exitX=1;exitY=0.9;entryX=0;entryY=0.5;" target="c14" value="«import»">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="370" y="384" />
+              <mxPoint x="370" y="530" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c27" edge="1" parent="1" source="c10" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;strokeColor=#9673A6;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" target="c16" value="HTTP / JSON">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c28" edge="1" parent="1" source="c4" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;exitX=0.1;exitY=1;entryX=0.1;entryY=0;" target="c6" value="«import»">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c29" edge="1" parent="1" source="c4" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;" target="c16" value="launches">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1000" y="210" />
+              <mxPoint x="1000" y="420" />
+              <mxPoint x="1040" y="420" />
+              <mxPoint x="1040" y="530" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c30" edge="1" parent="1" source="c18" style="html=1;fontSize=10;labelBackgroundColor=#FFFFFF;strokeColor=#333333;edgeStyle=orthogonalEdgeStyle;rounded=0;endArrow=open;dashed=1;strokeColor=#B85450;" target="c8" value="tests">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="700" y="640" />
+              <mxPoint x="700" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
