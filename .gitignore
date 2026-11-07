@@ -40,3 +40,4 @@ htmlcov/
 .ruff_cache/
 src/email_service/*.backup
 tests/*.backup
+reports/
